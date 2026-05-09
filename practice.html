@@ -443,11 +443,10 @@
     }
 
     .digit-grid-panel {
-      display: grid;
-      grid-template-columns: 32px auto;
-      grid-template-rows: 22px auto;
-      gap: 6px;
-      align-items: center;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
       width: max-content;
       max-width: 100%;
     }
@@ -455,28 +454,12 @@
     .axis-label {
       color: var(--muted);
       font-size: 0.74rem;
-      line-height: 1.05;
+      line-height: 1.2;
       user-select: none;
-    }
-
-    .top-axis {
-      grid-column: 2;
-      grid-row: 1;
-      text-align: center;
-    }
-
-    .left-axis {
-      grid-column: 1;
-      grid-row: 2;
-      writing-mode: vertical-rl;
-      transform: rotate(180deg);
-      text-align: center;
-      justify-self: center;
+      text-align: left;
     }
 
     .digit-grid {
-      grid-column: 2;
-      grid-row: 2;
       display: grid;
       grid-template-columns: repeat(4, 46px);
       grid-template-rows: repeat(4, 46px);
@@ -915,7 +898,7 @@
 </head>
 <body>
   <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle color theme">☾</button>
-  <span class="version-tag" aria-hidden="true">v19 SHA <span class="sha">__SHA__</span></span>
+  <span class="version-tag" aria-hidden="true">v20 SHA <span class="sha">__SHA__</span></span>
   <script>
     (function () {
       var sha = document.querySelector(".version-tag .sha");
@@ -1008,8 +991,8 @@
           <input id="problemMode" type="hidden" value="range">
 
           <div class="digit-grid-panel">
-            <div class="axis-label top-axis">digits in second number</div>
-            <div class="axis-label left-axis">digits in first number</div>
+            <div class="axis-label">digits in first number</div>
+            <div class="axis-label">digits in second number</div>
             <div id="digitGrid" class="digit-grid" aria-label="Digit-count grid"></div>
           </div>
 
