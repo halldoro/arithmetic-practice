@@ -459,6 +459,14 @@
       text-align: left;
     }
 
+    .axis-arrow {
+      display: inline-block;
+      font-size: 0.95rem;
+      line-height: 1;
+      margin-right: 4px;
+      vertical-align: -2px;
+    }
+
     .digit-grid {
       display: grid;
       grid-template-columns: repeat(4, 46px);
@@ -905,7 +913,7 @@
 </head>
 <body>
   <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle color theme">☾</button>
-  <span class="version-tag" aria-hidden="true">v21 SHA <span class="sha">__SHA__</span></span>
+  <span class="version-tag" aria-hidden="true">v22 SHA <span class="sha">__SHA__</span></span>
   <script>
     (function () {
       var sha = document.querySelector(".version-tag .sha");
@@ -998,8 +1006,8 @@
           <input id="problemMode" type="hidden" value="range">
 
           <div class="digit-grid-panel">
-            <div class="axis-label">digits in first number</div>
-            <div class="axis-label">digits in second number</div>
+            <div class="axis-label"><span class="axis-arrow" aria-hidden="true">↕</span>digits in first number</div>
+            <div class="axis-label"><span class="axis-arrow" aria-hidden="true">↔</span>digits in second number</div>
             <div id="digitGrid" class="digit-grid" aria-label="Digit-count grid"></div>
           </div>
 
