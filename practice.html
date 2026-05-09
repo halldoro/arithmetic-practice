@@ -735,7 +735,7 @@
 </head>
 <body>
   <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle color theme">☾</button>
-  <span class="version-tag" aria-hidden="true">v12 SHA <span class="sha">__SHA__</span></span>
+  <span class="version-tag" aria-hidden="true">v13 SHA <span class="sha">__SHA__</span></span>
   <script>
     (function () {
       var sha = document.querySelector(".version-tag .sha");
@@ -772,13 +772,13 @@
   <main class="app">
     <div class="exercise-tabs" role="tablist" aria-label="Exercise type">
       <button class="exercise-tab active" type="button" role="tab" aria-selected="true" data-exercise="multiplicationTables">
-        Multiplication tables
+        Single digit multiplication
       </button>
       <button class="exercise-tab" type="button" role="tab" aria-selected="false" data-exercise="lineMultiplication">
-        Line multiplication
+        Multi digit multiplication
       </button>
       <button class="exercise-tab disabled" type="button" role="tab" aria-selected="false" disabled>
-        Division practice
+        Division
       </button>
       <input id="exerciseType" type="hidden" value="lineMultiplication">
     </div>
