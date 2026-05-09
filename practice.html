@@ -93,6 +93,21 @@
       background: #ececf1;
     }
 
+    .version-tag {
+      position: absolute;
+      top: 10px;
+      right: 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #888;
+      letter-spacing: 0.02em;
+      pointer-events: none;
+    }
+
+    @media print {
+      .version-tag { display: none; }
+    }
+
     .tables-view {
       margin-bottom: 22px;
     }
@@ -476,6 +491,7 @@
   </style>
 </head>
 <body>
+  <span class="version-tag" aria-hidden="true">v24</span>
   <header>
     <h1>Arithmetic Practice Sheets</h1>
     <p class="subtitle">
