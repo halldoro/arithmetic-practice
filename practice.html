@@ -575,9 +575,9 @@
         "aria-label": `${problem.left} times ${problem.right}`
       });
 
-      addText(svg, `${problem.left} × ${problem.right}`, 48, 70, {
+      addText(svg, `${problem.left} × ${problem.right}`, 48, 78, {
         fill: ink,
-        "font-size": 42
+        "font-size": 74
       });
 
       // ------------------------------------------------------------
@@ -672,8 +672,8 @@
       const bb = boxBBox();
 
       const outerPad = 42;
-      const titleBand = 92;
-      const gapBetween = 56;
+      const titleBand = 116;
+      const gapBetweenBase = 48;
 
       const contentLeft = outerPad;
       const contentTop = titleBand;
@@ -683,45 +683,66 @@
       const gridNaturalW = gb.maxX - gb.minX;
       const gridNaturalH = gb.maxY - gb.minY;
 
-      // First fit the mathBoxes into the content area.  Their nominal square
-      // size is fixed, but if a large 4x4 box image would clip, scale the whole
-      // box image just enough to fit.  This is the only safe way to preserve
-      // printability across 1, 3, and 12-problem layouts.
-      const maxBoxW = contentW * 0.68;
+      // Fixed nominal box size, but protect against clipping in dense layouts.
+      const maxBoxW = contentW * 0.70;
       const maxBoxH = contentH * 0.98;
       const boxScale = Math.min(1, maxBoxW / bb.width, maxBoxH / bb.height);
-
       const scaledBoxW = bb.width * boxScale;
       const scaledBoxH = bb.height * boxScale;
 
-      // The grid uses the remaining left-hand space and is also protected
-      // against clipping.  Then it is anchored to the lower-left corner.
-      const availableGridW = Math.max(180, contentW - scaledBoxW - gapBetween);
+      // Grid size is stable, only shrinking when mathematically necessary.
       const gridScale = Math.min(
         1,
-        availableGridW / gridNaturalW,
+        (contentW * 0.48) / gridNaturalW,
         (contentH * 0.96) / gridNaturalH
       );
-
       const scaledGridW = gridNaturalW * gridScale;
       const scaledGridH = gridNaturalH * gridScale;
 
-      // Place by bounding box:
-      //   grid      -> lower-left
-      //   mathBoxes -> upper-right
+      // Compute placement for each problem individually.
       //
-      // Because both placements use the precomputed bounding boxes, neither
-      // drawing can go outside the SVG problem area.  The right image is pulled
-      // left only if needed to preserve a gap from the grid.
-      const gridLeft = contentLeft;
-      const gridTop = contentTop + contentH - scaledGridH;
+      // If grid + boxes fit side-by-side, center the PAIR as a group.  This
+      // prevents tiny cases like 1x2 from being thrown to opposite corners.
+      //
+      // If they do not fit, use the corner strategy: grid lower-left,
+      // mathBoxes upper-right, while respecting both bounding boxes.
+      const gapBetween = Math.max(
+        28,
+        Math.min(gapBetweenBase, contentW * 0.05)
+      );
 
-      let boxesLeft = contentLeft + contentW - scaledBoxW;
-      const minimumBoxesLeft = gridLeft + scaledGridW + gapBetween;
-      boxesLeft = Math.max(boxesLeft, minimumBoxesLeft);
-      boxesLeft = Math.min(boxesLeft, contentLeft + contentW - scaledBoxW);
+      const pairW = scaledGridW + gapBetween + scaledBoxW;
+      const pairH = Math.max(scaledGridH, scaledBoxH);
+      const fitsAsPair = pairW <= contentW && pairH <= contentH;
 
-      const boxesTop = contentTop;
+      let gridLeft;
+      let gridTop;
+      let boxesLeft;
+      let boxesTop;
+
+      if (fitsAsPair) {
+        const pairLeft = contentLeft + (contentW - pairW) / 2;
+        const pairTop = contentTop + (contentH - pairH) / 2;
+
+        gridLeft = pairLeft;
+        boxesLeft = gridLeft + scaledGridW + gapBetween;
+
+        // Keep the visual relationship: boxes a little higher, grid a little lower.
+        gridTop = pairTop + (pairH - scaledGridH) * 0.68;
+        boxesTop = pairTop + (pairH - scaledBoxH) * 0.20;
+      } else {
+        gridLeft = contentLeft;
+        gridTop = contentTop + contentH - scaledGridH;
+
+        boxesLeft = contentLeft + contentW - scaledBoxW;
+        boxesTop = contentTop;
+      }
+
+      // Final clamp: nothing may clip.
+      gridLeft = Math.max(contentLeft, Math.min(gridLeft, contentLeft + contentW - scaledGridW));
+      gridTop = Math.max(contentTop, Math.min(gridTop, contentTop + contentH - scaledGridH));
+      boxesLeft = Math.max(contentLeft, Math.min(boxesLeft, contentLeft + contentW - scaledBoxW));
+      boxesTop = Math.max(contentTop, Math.min(boxesTop, contentTop + contentH - scaledBoxH));
 
       const boxesCx = boxesLeft + scaledBoxW / 2;
       const boxesCy = boxesTop + scaledBoxH / 2;
