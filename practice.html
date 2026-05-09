@@ -502,7 +502,7 @@
   <script>
     (function () {
       var sha = document.querySelector(".version-tag .sha");
-      if (sha && sha.textContent.trim() === "__SHA__") sha.textContent = "dev";
+      if (sha && !/^[0-9a-f]{7,40}$/i.test(sha.textContent.trim())) sha.textContent = "dev";
     })();
   </script>
   <header>
