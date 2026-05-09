@@ -90,25 +90,48 @@
       background: var(--ui-bg);
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       line-height: 1.4;
+      padding-left: 44px; /* room for the fixed title rail on the left */
     }
 
+    /* Title rail: a fixed strip on the left edge with the page title
+       rotated 90deg counter-clockwise. Persistent across scroll and tab
+       switches (it's a sibling of <main>, outside any tab view). */
     header {
-      padding: 22px 24px 8px;
-      max-width: 1180px;
-      margin: 0 auto;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 5;
+      background: var(--bg);
+      border-right: 1px solid var(--border);
     }
 
-    h1 {
-      margin: 0 0 6px;
-      font-size: 1.55rem;
+    .title-rail {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      white-space: nowrap;
+      transform: rotate(-90deg);
+      transform-origin: center center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 0.95rem;
       font-weight: 700;
-      letter-spacing: -0.02em;
+      letter-spacing: -0.01em;
     }
 
-    .subtitle {
+    header .subtitle {
       margin: 0;
       color: var(--muted);
-      font-size: 0.96rem;
+      font-size: 0.78rem;
     }
 
     .app {
@@ -913,7 +936,7 @@
 </head>
 <body>
   <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle color theme">☾</button>
-  <span class="version-tag" aria-hidden="true">v23 SHA <span class="sha">__SHA__</span></span>
+  <span class="version-tag" aria-hidden="true">v24 SHA <span class="sha">__SHA__</span></span>
   <script>
     (function () {
       var sha = document.querySelector(".version-tag .sha");
@@ -941,10 +964,10 @@
     })();
   </script>
   <header>
-    <h1>Arithmetic Practice Sheets</h1>
-    <p class="subtitle">
-      Printable arithmetic worksheets for children.
-    </p>
+    <div class="title-rail">
+      <h1>Arithmetic Practice Sheets</h1>
+      <p class="subtitle">Printable arithmetic worksheets for children.</p>
+    </div>
   </header>
 
   <main class="app">
