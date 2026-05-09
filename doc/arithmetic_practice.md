@@ -1,6 +1,6 @@
-# Arithmetic Practice Sheets Vocabulary
+# Arithmetic Practice Sheets
 
-This document defines the standard vocabulary used for the arithmetic worksheet generator. It is meant to be readable by both humans and LLMs so that future changes can be discussed precisely.
+This document is the canonical reference for the Arithmetic Practice Sheets site — what it does, how the page is organized, and the vocabulary used to talk about its parts. It is meant to be readable by both humans and LLMs so that future changes can be discussed precisely. New sections beyond vocabulary (e.g. build/deploy notes, design decisions, change log) belong in this file too as the project grows.
 
 ## Project purpose
 
