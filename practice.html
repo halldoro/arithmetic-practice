@@ -93,6 +93,52 @@
       background: #ececf1;
     }
 
+    .tables-view {
+      margin-bottom: 22px;
+    }
+
+    .tables-intro {
+      background: var(--paper);
+      border: 1px solid var(--ui-border);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      padding: 20px 22px;
+      margin-bottom: 18px;
+    }
+
+    .tables-intro h2 {
+      margin: 0 0 10px;
+    }
+
+    .tables-intro p {
+      margin: 0 0 14px;
+      line-height: 1.55;
+    }
+
+    .download-btn {
+      display: inline-block;
+      background: var(--ink);
+      color: white;
+      border: 1px solid var(--ink);
+      border-radius: 999px;
+      padding: 9px 18px;
+      font-weight: 650;
+      text-decoration: none;
+    }
+
+    .download-btn:hover {
+      filter: brightness(1.1);
+    }
+
+    .tables-pdf {
+      width: 100%;
+      height: 80vh;
+      min-height: 600px;
+      border: 1px solid var(--ui-border);
+      border-radius: 14px;
+      background: var(--paper);
+    }
+
     .controls-layout {
       display: grid;
       grid-template-columns: minmax(230px, 0.8fr) minmax(420px, 1.35fr) minmax(260px, 0.95fr);
@@ -394,7 +440,8 @@
       }
 
       header,
-      .controls {
+      .controls,
+      .tables-view {
         display: none !important;
       }
 
@@ -432,26 +479,26 @@
   <header>
     <h1>Arithmetic Practice Sheets</h1>
     <p class="subtitle">
-      Printable arithmetic worksheets for children. This first exercise type is visual line multiplication.
+      Printable arithmetic worksheets for children.
     </p>
   </header>
 
   <main class="app">
     <section class="controls" aria-label="Worksheet controls">
       <div class="exercise-tabs" role="tablist" aria-label="Exercise type">
-        <button class="exercise-tab active" type="button" role="tab" aria-selected="true" data-exercise="lineMultiplication">
+        <button class="exercise-tab active" type="button" role="tab" aria-selected="true" data-exercise="multiplicationTables">
+          Multiplication tables
+        </button>
+        <button class="exercise-tab" type="button" role="tab" aria-selected="false" data-exercise="lineMultiplication">
           Line multiplication
         </button>
-        <a class="exercise-tab" href="MultiplicationTable.pdf" download>
-          Multiplication tables
-        </a>
         <button class="exercise-tab disabled" type="button" role="tab" aria-selected="false" disabled>
           Division practice
         </button>
         <input id="exerciseType" type="hidden" value="lineMultiplication">
       </div>
 
-      <div class="controls-layout">
+      <div class="controls-layout" data-view="lineMultiplication" hidden>
         <div class="control-card problems-card">
           <h2>Problems</h2>
           <input id="problemCount" type="hidden" value="3">
@@ -512,12 +559,23 @@
         </div>
       </div>
 
-      <p class="future-note">
+      <p class="future-note" data-view="lineMultiplication" hidden>
         The worksheet updates automatically when options change. Page orientation is automatic: 1–3 problems use portrait; 4–12 problems use landscape.
       </p>
     </section>
 
-    <section class="worksheet-wrap">
+    <section class="tables-view" data-view="multiplicationTables">
+      <div class="tables-intro">
+        <h2>Multiplication tables</h2>
+        <p>
+          This site focuses on multi-digit multiplication. The single-digit products from 1×1 through 10×10 are the prerequisite — once those are automatic, the worksheets become quick practice instead of a struggle. Print this table and review it daily.
+        </p>
+        <a class="download-btn" href="MultiplicationTable.pdf" download>Download PDF</a>
+      </div>
+      <iframe class="tables-pdf" src="MultiplicationTable.pdf" title="Multiplication tables PDF" loading="lazy"></iframe>
+    </section>
+
+    <section class="worksheet-wrap" data-view="lineMultiplication" hidden>
       <div id="page" class="page portrait" aria-label="Printable worksheet"></div>
     </section>
   </main>
@@ -1222,6 +1280,23 @@
     });
 
     document.getElementById("printBtn").addEventListener("click", () => window.print());
+
+    function setActiveExerciseTab(tab) {
+      if (!tab || tab.classList.contains("disabled")) return;
+      const target = tab.dataset.exercise;
+      document.querySelectorAll(".exercise-tab").forEach(t => {
+        const isActive = t === tab;
+        t.classList.toggle("active", isActive);
+        t.setAttribute("aria-selected", isActive ? "true" : "false");
+      });
+      document.querySelectorAll("[data-view]").forEach(v => {
+        v.hidden = v.dataset.view !== target;
+      });
+    }
+
+    document.querySelectorAll(".exercise-tab[data-exercise]").forEach(tab => {
+      tab.addEventListener("click", () => setActiveExerciseTab(tab));
+    });
 
     buildProblemCountGrid();
     initializeProblemTypePicker();
