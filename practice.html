@@ -737,6 +737,31 @@
       }
     }
 
+    /* L-bar layout for wide viewports: thin controls in a row across the top,
+       Problem size below them spanning the full width of the control column,
+       worksheet on the right occupying full height. The aside flattens via
+       display:contents so its children become direct grid items. */
+    @media (min-width: 1100px) {
+      .line-mult-layout {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(140px, 1fr)) minmax(0, 3fr);
+        grid-template-areas:
+          "random  answers print num    worksheet"
+          "size    size    size  size   worksheet"
+          "note    note    note  note   worksheet";
+        gap: 12px;
+        align-items: start;
+      }
+      .line-sidebar { display: contents; }
+      .line-mult-layout > .card-random   { grid-area: random; }
+      .line-mult-layout > .card-answers  { grid-area: answers; }
+      .line-mult-layout > .card-print    { grid-area: print; }
+      .line-mult-layout > .problems-card { grid-area: num; }
+      .line-mult-layout > .size-card     { grid-area: size; }
+      .line-mult-layout > .future-note   { grid-area: note; }
+      .line-mult-layout > .worksheet-wrap{ grid-area: worksheet; }
+    }
+
     @page {
       size: A4 portrait;
       margin: 5mm;
@@ -794,7 +819,7 @@
 </head>
 <body>
   <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle color theme">☾</button>
-  <span class="version-tag" aria-hidden="true">v16 SHA <span class="sha">__SHA__</span></span>
+  <span class="version-tag" aria-hidden="true">v17 SHA <span class="sha">__SHA__</span></span>
   <script>
     (function () {
       var sha = document.querySelector(".version-tag .sha");
@@ -898,7 +923,7 @@
           </p>
         </div>
 
-        <div class="control-card compact-card">
+        <div class="control-card compact-card card-random">
           <h2>Randomness</h2>
           <label for="seed">Seed <span class="muted">(optional)</span></label>
           <div class="paired-row">
@@ -907,7 +932,7 @@
           </div>
         </div>
 
-        <div class="control-card compact-card">
+        <div class="control-card compact-card card-answers">
           <h2>Answers</h2>
           <div class="switch-row">
             <label for="includeAnswer">Include answer</label>
@@ -918,7 +943,7 @@
           </div>
         </div>
 
-        <div class="control-card compact-card">
+        <div class="control-card compact-card card-print">
           <h2>Print style</h2>
           <label for="inkColor">Ink color</label>
           <div class="paired-row">
