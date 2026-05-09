@@ -433,25 +433,30 @@
 
       const svg = svgEl("svg", {
         class: "problem-svg",
-        viewBox: "0 0 1000 620",
+        viewBox: "0 0 1200 700",
         preserveAspectRatio: "xMidYMid meet",
         role: "img",
         "aria-label": `${problem.left} times ${problem.right}`
       });
 
       const titleGroup = svgEl("g", {}, svg);
-      addText(titleGroup, `${problem.left} × ${problem.right}`, 42, 62, {
+      addText(titleGroup, `${problem.left} × ${problem.right}`, 48, 70, {
         fill: ink,
         "font-size": 42
       });
 
+      // The grid sits in the lower-left part of the problem box.
+      // Larger digit counts push it a little further down-left, leaving
+      // room for mathBoxes in the upper-right.
+      const gridX = 250 - Math.max(0, n - 3) * 18;
+      const gridY = 405 + Math.max(0, m - 3) * 16;
       const gridGroup = svgEl("g", {
-        transform: "translate(255 330)"
+        transform: `translate(${gridX} ${gridY})`
       }, svg);
 
-      const sep = 74;
-      const margin = 30;
-      const labelOffset = 34;
+      const sep = 86;
+      const margin = 34;
+      const labelOffset = 36;
       const rt = Math.SQRT1_2;
 
       function pt(u, v) {
@@ -473,7 +478,7 @@
           x2: p2.x,
           y2: p2.y,
           stroke: ink,
-          "stroke-width": 4.2,
+          "stroke-width": 4.8,
           "stroke-linecap": "round"
         }, gridGroup);
       }
@@ -496,7 +501,7 @@
           svgEl("circle", {
             cx: p.x,
             cy: p.y,
-            r: 10.5,
+            r: 11.8,
             fill: ink
           }, gridGroup);
         }
@@ -507,7 +512,7 @@
         const p = pt(uMin - labelOffset, v);
         addText(gridGroup, leftDigits[i], p.x, p.y, {
           fill: ink,
-          "font-size": 39,
+          "font-size": 43,
           "text-anchor": "end"
         });
       }
@@ -517,17 +522,19 @@
         const p = pt(u, vMin - labelOffset);
         addText(gridGroup, rightDigits[j], p.x, p.y, {
           fill: ink,
-          "font-size": 39,
+          "font-size": 43,
           "text-anchor": "middle"
         });
       }
 
-      // Keep the mathBoxes visibly separate from the line grid.
-      // Larger problems need a little more rightward offset so the two
-      // drawings do not cover each other.
-      const boxesX = 645 + Math.max(0, n - 3) * 24 + Math.max(0, m - 3) * 18;
+      // The mathBoxes sit in the upper-right part of the problem box.
+      // For larger problems, move them further right and a little upward
+      // so they do not cover the line grid while preserving the same
+      // brick-lattice symmetry.
+      const boxesX = 785 + Math.max(0, n - 3) * 42 + Math.max(0, m - 3) * 22;
+      const boxesY = 285 - Math.max(0, m - 3) * 18;
       const boxesGroup = svgEl("g", {
-        transform: `translate(${boxesX} 280)`
+        transform: `translate(${boxesX} ${boxesY})`
       }, svg);
 
       drawMathBoxes(boxesGroup, m, n, ink);
@@ -538,8 +545,8 @@
     function drawMathBoxes(parent, m, n, ink) {
       const rows = visualRows(m, n);
 
-      const square = 43;
-      const gap = 7;
+      const square = 52;
+      const gap = 8;
       const squareStep = square + gap / 2;
       const rowStep = square + gap;
 
@@ -566,7 +573,7 @@
           height: square,
           fill: "white",
           stroke: ink,
-          "stroke-width": 2.8
+          "stroke-width": 3.0
         }, parent);
 
         svgEl("line", {
@@ -575,7 +582,7 @@
           x2: x + square,
           y2: y + square,
           stroke: ink,
-          "stroke-width": 2.8
+          "stroke-width": 3.0
         }, parent);
       }
 
