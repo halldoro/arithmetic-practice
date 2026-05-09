@@ -99,9 +99,16 @@
       right: 14px;
       font-size: 12px;
       font-weight: 600;
-      color: #888;
+      color: #555;
+      opacity: 0.5;
       letter-spacing: 0.02em;
       pointer-events: none;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .version-tag .sha {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      margin-left: 4px;
     }
 
     @media print {
@@ -491,7 +498,13 @@
   </style>
 </head>
 <body>
-  <span class="version-tag" aria-hidden="true">v24</span>
+  <span class="version-tag" aria-hidden="true">v2<span class="sha">__SHA__</span></span>
+  <script>
+    (function () {
+      var sha = document.querySelector(".version-tag .sha");
+      if (sha && sha.textContent.trim() === "__SHA__") sha.textContent = "dev";
+    })();
+  </script>
   <header>
     <h1>Arithmetic Practice Sheets</h1>
     <p class="subtitle">
