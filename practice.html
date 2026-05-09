@@ -117,15 +117,6 @@
       padding: 16px 24px 40px;
     }
 
-    .controls {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      box-shadow: var(--shadow-md);
-      padding: 14px 16px 16px;
-      margin-bottom: 22px;
-    }
-
     /* Segmented-control style tab strip. */
     .exercise-tabs {
       display: inline-flex;
@@ -133,7 +124,7 @@
       background: var(--surface-2);
       border-radius: 9px;
       padding: 3px;
-      margin-bottom: 14px;
+      margin-bottom: 16px;
       flex-wrap: wrap;
     }
 
@@ -260,26 +251,38 @@
       background: var(--paper);
     }
 
-    .controls-layout {
+    .line-mult-layout {
       display: grid;
-      grid-template-columns: minmax(170px, 0.7fr) minmax(310px, 1fr) minmax(200px, 0.85fr);
-      gap: 14px;
-      align-items: stretch;
-      max-width: 860px;
-      margin: 0 auto;
+      grid-template-columns: minmax(280px, 320px) minmax(0, 1fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .line-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .line-sidebar .future-note {
+      margin: 0;
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.45;
     }
 
     .control-card {
       border: 1px solid var(--border);
-      border-radius: 10px;
+      border-radius: 9px;
       background: var(--surface-2);
-      padding: 14px;
+      padding: 11px 12px;
     }
 
     .control-card h2 {
-      margin: 0 0 10px;
-      font-size: 1rem;
-      letter-spacing: -0.01em;
+      margin: 0 0 8px;
+      font-size: 0.92rem;
+      font-weight: 650;
+      letter-spacing: -0.005em;
     }
 
     .problems-card {
@@ -322,10 +325,14 @@
 
     .size-card-header {
       display: flex;
-      align-items: start;
-      justify-content: space-between;
-      gap: 14px;
-      margin-bottom: 12px;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .size-card-header .mode-toggle {
+      align-self: start;
     }
 
     .size-card-header p {
@@ -447,21 +454,19 @@
       font-size: 0.82rem;
     }
 
-    .side-cards {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 14px;
-      align-content: start;
-    }
-
     .compact-card {
       display: grid;
-      gap: 8px;
+      gap: 6px;
       align-content: start;
     }
 
     .compact-card h2 {
       margin-bottom: 2px;
+    }
+
+    .compact-card label {
+      font-size: 0.82rem;
+      color: var(--muted);
     }
 
     .paired-row {
@@ -580,19 +585,11 @@
     }
 
     @media (max-width: 900px) {
-      .controls-layout {
-        grid-template-columns: 1fr;
-      }
-
-      .controls-layout {
+      .line-mult-layout {
         grid-template-columns: 1fr;
       }
 
       .paired-row {
-        grid-template-columns: 1fr;
-      }
-
-      .side-cards {
         grid-template-columns: 1fr;
       }
 
@@ -613,7 +610,8 @@
       }
 
       header,
-      .controls,
+      .exercise-tabs,
+      .line-sidebar,
       .tables-view {
         display: none !important;
       }
@@ -657,7 +655,7 @@
 </head>
 <body>
   <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle color theme">☾</button>
-  <span class="version-tag" aria-hidden="true">v6 SHA <span class="sha">__SHA__</span></span>
+  <span class="version-tag" aria-hidden="true">v7 SHA <span class="sha">__SHA__</span></span>
   <script>
     (function () {
       var sha = document.querySelector(".version-tag .sha");
@@ -692,21 +690,32 @@
   </header>
 
   <main class="app">
-    <section class="controls" aria-label="Worksheet controls">
-      <div class="exercise-tabs" role="tablist" aria-label="Exercise type">
-        <button class="exercise-tab active" type="button" role="tab" aria-selected="true" data-exercise="multiplicationTables">
-          Multiplication tables
-        </button>
-        <button class="exercise-tab" type="button" role="tab" aria-selected="false" data-exercise="lineMultiplication">
-          Line multiplication
-        </button>
-        <button class="exercise-tab disabled" type="button" role="tab" aria-selected="false" disabled>
-          Division practice
-        </button>
-        <input id="exerciseType" type="hidden" value="lineMultiplication">
-      </div>
+    <div class="exercise-tabs" role="tablist" aria-label="Exercise type">
+      <button class="exercise-tab active" type="button" role="tab" aria-selected="true" data-exercise="multiplicationTables">
+        Multiplication tables
+      </button>
+      <button class="exercise-tab" type="button" role="tab" aria-selected="false" data-exercise="lineMultiplication">
+        Line multiplication
+      </button>
+      <button class="exercise-tab disabled" type="button" role="tab" aria-selected="false" disabled>
+        Division practice
+      </button>
+      <input id="exerciseType" type="hidden" value="lineMultiplication">
+    </div>
 
-      <div class="controls-layout" data-view="lineMultiplication" hidden>
+    <section class="tables-view" data-view="multiplicationTables">
+      <div class="tables-intro">
+        <h2>Multiplication tables</h2>
+        <p>
+          This site focuses on multi-digit multiplication. The single-digit products from 1×1 through 10×10 are the prerequisite — once those are automatic, the worksheets become quick practice instead of a struggle. Print this table and review it daily.
+        </p>
+        <a class="download-btn" href="MultiplicationTable.pdf" download>Download PDF</a>
+      </div>
+      <iframe class="tables-pdf" src="MultiplicationTable.pdf" title="Multiplication tables PDF" loading="lazy"></iframe>
+    </section>
+
+    <div class="line-mult-layout" data-view="lineMultiplication" hidden>
+      <aside class="line-sidebar" aria-label="Worksheet controls">
         <div class="control-card problems-card">
           <h2>Problems</h2>
           <input id="problemCount" type="hidden" value="3">
@@ -741,51 +750,38 @@
           </p>
         </div>
 
-        <div class="side-cards">
-          <div class="control-card compact-card">
-            <h2>Randomness</h2>
-            <label for="seed">Seed <span class="muted">(optional)</span></label>
-            <div class="paired-row">
-              <input id="seed" inputmode="numeric" placeholder="blank = random">
-              <button id="newSetBtn" type="button" class="secondary">New set</button>
-            </div>
-          </div>
-
-          <div class="control-card compact-card">
-            <h2>Print style</h2>
-            <label for="inkColor">Ink color</label>
-            <div class="paired-row">
-              <select id="inkColor">
-                <option value="#0000b8" selected>Blue</option>
-                <option value="#000000">Black</option>
-                <option value="#1c5d2f">Green</option>
-                <option value="#7b1f1f">Red-brown</option>
-              </select>
-              <button id="printBtn" type="button">Print</button>
-            </div>
+        <div class="control-card compact-card">
+          <h2>Randomness</h2>
+          <label for="seed">Seed <span class="muted">(optional)</span></label>
+          <div class="paired-row">
+            <input id="seed" inputmode="numeric" placeholder="blank = random">
+            <button id="newSetBtn" type="button" class="secondary">New set</button>
           </div>
         </div>
-      </div>
 
-      <p class="future-note" data-view="lineMultiplication" hidden>
-        The worksheet updates automatically when options change. Page orientation is automatic: 1–3 problems use portrait; 4–12 problems use landscape.
-      </p>
-    </section>
+        <div class="control-card compact-card">
+          <h2>Print style</h2>
+          <label for="inkColor">Ink color</label>
+          <div class="paired-row">
+            <select id="inkColor">
+              <option value="#0000b8" selected>Blue</option>
+              <option value="#000000">Black</option>
+              <option value="#1c5d2f">Green</option>
+              <option value="#7b1f1f">Red-brown</option>
+            </select>
+            <button id="printBtn" type="button">Print</button>
+          </div>
+        </div>
 
-    <section class="tables-view" data-view="multiplicationTables">
-      <div class="tables-intro">
-        <h2>Multiplication tables</h2>
-        <p>
-          This site focuses on multi-digit multiplication. The single-digit products from 1×1 through 10×10 are the prerequisite — once those are automatic, the worksheets become quick practice instead of a struggle. Print this table and review it daily.
+        <p class="future-note">
+          The worksheet updates automatically when options change. Page orientation is automatic: 1–3 problems use portrait; 4–12 problems use landscape.
         </p>
-        <a class="download-btn" href="MultiplicationTable.pdf" download>Download PDF</a>
-      </div>
-      <iframe class="tables-pdf" src="MultiplicationTable.pdf" title="Multiplication tables PDF" loading="lazy"></iframe>
-    </section>
+      </aside>
 
-    <section class="worksheet-wrap" data-view="lineMultiplication" hidden>
-      <div id="page" class="page portrait" aria-label="Printable worksheet"></div>
-    </section>
+      <section class="worksheet-wrap">
+        <div id="page" class="page portrait" aria-label="Printable worksheet"></div>
+      </section>
+    </div>
   </main>
 
   <script>
