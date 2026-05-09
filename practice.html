@@ -578,7 +578,14 @@
       for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
         const y = offsetY + rowIndex * rowStep;
         for (const [i, j] of rows[rowIndex]) {
-          const xIndex = i + j;
+          // Mirror the horizontal coordinate so the box image has the
+          // same left/right lean as the line-intersection grid.
+          //
+          // The grid's visible horizontal coordinate is proportional to i+j,
+          // but SVG's box anchors grow to the right. Using maxX - (i+j)
+          // keeps the brick rows snapped to the square grid while matching
+          // the orientation of the circle pattern.
+          const xIndex = maxX - (i + j);
           const x = offsetX + (xIndex - minX) * squareStep;
           pieceAt(x, y);
         }
