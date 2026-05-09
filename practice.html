@@ -156,6 +156,39 @@
       cursor: not-allowed;
     }
 
+    /* Sub-tabs sit one indent below the topic tabs and act as the actual
+       view switcher. Visually lighter — underline marks the active. */
+    .sub-tabs {
+      display: inline-flex;
+      gap: 4px;
+      margin: -2px 0 16px;
+      padding-left: 4px;
+      flex-wrap: wrap;
+    }
+
+    .sub-tab {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      padding: 4px 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 5px;
+      border-bottom: 2px solid transparent;
+      transition: color 150ms ease, border-color 150ms ease;
+    }
+
+    .sub-tab:hover:not(.active):not(.disabled) {
+      color: var(--text);
+    }
+
+    .sub-tab.active {
+      color: var(--text);
+      border-bottom-color: var(--accent);
+      border-radius: 5px 5px 0 0;
+    }
+
     .version-tag {
       position: absolute;
       top: 48px;
@@ -691,6 +724,7 @@
 
       header,
       .exercise-tabs,
+      .sub-tabs,
       .line-sidebar,
       .tables-view {
         display: none !important;
@@ -735,7 +769,7 @@
 </head>
 <body>
   <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle color theme">☾</button>
-  <span class="version-tag" aria-hidden="true">v14 SHA <span class="sha">__SHA__</span></span>
+  <span class="version-tag" aria-hidden="true">v15 SHA <span class="sha">__SHA__</span></span>
   <script>
     (function () {
       var sha = document.querySelector(".version-tag .sha");
@@ -770,15 +804,21 @@
   </header>
 
   <main class="app">
-    <div class="exercise-tabs" role="tablist" aria-label="Exercise type">
-      <button class="exercise-tab active" type="button" role="tab" aria-selected="true" data-exercise="multiplicationTables">
-        Single digit multiplication
-      </button>
-      <button class="exercise-tab" type="button" role="tab" aria-selected="false" data-exercise="lineMultiplication">
-        Multi digit multiplication
+    <div class="exercise-tabs" role="tablist" aria-label="Topic">
+      <button class="exercise-tab active" type="button" role="tab" aria-selected="true" data-topic="multiplication">
+        Multiplication
       </button>
       <button class="exercise-tab disabled" type="button" role="tab" aria-selected="false" disabled>
         Division
+      </button>
+    </div>
+
+    <div class="sub-tabs" role="tablist" aria-label="Multiplication type">
+      <button class="sub-tab active" type="button" role="tab" aria-selected="true" data-exercise="multiplicationTables">
+        Single digit
+      </button>
+      <button class="sub-tab" type="button" role="tab" aria-selected="false" data-exercise="lineMultiplication">
+        Multi digit
       </button>
       <input id="exerciseType" type="hidden" value="lineMultiplication">
     </div>
@@ -1584,7 +1624,7 @@
     function setActiveExerciseTab(tab) {
       if (!tab || tab.classList.contains("disabled")) return;
       const target = tab.dataset.exercise;
-      document.querySelectorAll(".exercise-tab").forEach(t => {
+      document.querySelectorAll(".sub-tab").forEach(t => {
         const isActive = t === tab;
         t.classList.toggle("active", isActive);
         t.setAttribute("aria-selected", isActive ? "true" : "false");
@@ -1594,7 +1634,7 @@
       });
     }
 
-    document.querySelectorAll(".exercise-tab[data-exercise]").forEach(tab => {
+    document.querySelectorAll(".sub-tab[data-exercise]").forEach(tab => {
       tab.addEventListener("click", () => setActiveExerciseTab(tab));
     });
 
