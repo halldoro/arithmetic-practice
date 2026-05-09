@@ -593,11 +593,18 @@
 
     /* Current-seed indicator inside the Randomness card. Click to copy;
        a transient "Copied!" badge fades in via the .copied class. */
+    .seed-row-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
     .seed-display {
       display: flex;
       align-items: center;
       gap: 6px;
-      margin-top: 6px;
       font-size: 0.78rem;
       color: var(--muted);
     }
@@ -898,7 +905,7 @@
 </head>
 <body>
   <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle color theme">☾</button>
-  <span class="version-tag" aria-hidden="true">v20 SHA <span class="sha">__SHA__</span></span>
+  <span class="version-tag" aria-hidden="true">v21 SHA <span class="sha">__SHA__</span></span>
   <script>
     (function () {
       var sha = document.querySelector(".version-tag .sha");
@@ -1007,14 +1014,16 @@
         <div class="top-right-row">
           <div class="control-card compact-card card-random">
             <h2>Randomness</h2>
-            <label for="seed">Seed <span class="muted">(optional)</span></label>
+            <div class="seed-row-header">
+              <label for="seed">Seed <span class="muted">(optional)</span></label>
+              <div class="seed-display">
+                <span>Current:</span>
+                <button id="currentSeed" type="button" class="seed-current" title="Click to copy seed"></button>
+              </div>
+            </div>
             <div class="paired-row">
               <input id="seed" inputmode="numeric" placeholder="blank = random">
               <button id="newSetBtn" type="button" class="secondary">New set</button>
-            </div>
-            <div class="seed-display">
-              <span>Current:</span>
-              <button id="currentSeed" type="button" class="seed-current" title="Click to copy seed"></button>
             </div>
           </div>
 
