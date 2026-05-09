@@ -673,7 +673,6 @@
 
       const outerPad = 42;
       const titleBand = 116;
-      const gapBetweenBase = 48;
 
       const contentLeft = outerPad;
       const contentTop = titleBand;
@@ -683,59 +682,81 @@
       const gridNaturalW = gb.maxX - gb.minX;
       const gridNaturalH = gb.maxY - gb.minY;
 
-      // Fixed nominal box size, but protect against clipping in dense layouts.
-      const maxBoxW = contentW * 0.70;
+      // Layout is computed per problem from the measured bounding boxes.
+      //
+      // Heuristics:
+      //   - small/simple problems: center grid + boxes as one pair
+      //   - large/dense problems: push grid lower-left and boxes upper-right
+      //   - if the two measured boxes would overlap horizontally, shrink the
+      //     grid just enough to preserve a safe gap; the writing boxes keep
+      //     priority because children write in those squares
+      const density = m * n;
+      const denseProblem = density >= 12 || m >= 4 || n >= 4;
+
+      const minGap = denseProblem ? 74 : 42;
+
+      // MathBoxes have a fixed nominal square size, but may scale down only
+      // enough to avoid clipping in very dense layouts.
+      const maxBoxW = denseProblem ? contentW * 0.64 : contentW * 0.55;
       const maxBoxH = contentH * 0.98;
       const boxScale = Math.min(1, maxBoxW / bb.width, maxBoxH / bb.height);
       const scaledBoxW = bb.width * boxScale;
       const scaledBoxH = bb.height * boxScale;
 
-      // Grid size is stable, only shrinking when mathematically necessary.
-      const gridScale = Math.min(
-        1,
-        (contentW * 0.48) / gridNaturalW,
-        (contentH * 0.96) / gridNaturalH
-      );
-      const scaledGridW = gridNaturalW * gridScale;
-      const scaledGridH = gridNaturalH * gridScale;
+      // First try the natural grid size.
+      let gridScale = Math.min(1, (contentH * 0.96) / gridNaturalH);
 
-      // Compute placement for each problem individually.
-      //
-      // If grid + boxes fit side-by-side, center the PAIR as a group.  This
-      // prevents tiny cases like 1x2 from being thrown to opposite corners.
-      //
-      // If they do not fit, use the corner strategy: grid lower-left,
-      // mathBoxes upper-right, while respecting both bounding boxes.
-      const gapBetween = Math.max(
-        28,
-        Math.min(gapBetweenBase, contentW * 0.05)
-      );
+      // If the problem is dense, reserve room for the mathBoxes first and fit
+      // the grid into the remaining left side. This prevents the polygon-like
+      // visual footprints from overlapping.
+      if (denseProblem) {
+        const gridRoomW = Math.max(160, contentW - scaledBoxW - minGap);
+        gridScale = Math.min(gridScale, gridRoomW / gridNaturalW);
+      } else {
+        gridScale = Math.min(gridScale, (contentW * 0.48) / gridNaturalW);
+      }
 
-      const pairW = scaledGridW + gapBetween + scaledBoxW;
-      const pairH = Math.max(scaledGridH, scaledBoxH);
-      const fitsAsPair = pairW <= contentW && pairH <= contentH;
+      let scaledGridW = gridNaturalW * gridScale;
+      let scaledGridH = gridNaturalH * gridScale;
 
       let gridLeft;
       let gridTop;
       let boxesLeft;
       let boxesTop;
 
-      if (fitsAsPair) {
-        const pairLeft = contentLeft + (contentW - pairW) / 2;
-        const pairTop = contentTop + (contentH - pairH) / 2;
+      const naturalPairW = scaledGridW + minGap + scaledBoxW;
+      const naturalPairH = Math.max(scaledGridH, scaledBoxH);
+      const fitsComfortablyAsPair =
+        !denseProblem &&
+        naturalPairW <= contentW &&
+        naturalPairH <= contentH;
+
+      if (fitsComfortablyAsPair) {
+        // Small problems: keep the two drawings near the center as one object.
+        const pairLeft = contentLeft + (contentW - naturalPairW) / 2;
+        const pairTop = contentTop + (contentH - naturalPairH) / 2;
 
         gridLeft = pairLeft;
-        boxesLeft = gridLeft + scaledGridW + gapBetween;
+        boxesLeft = gridLeft + scaledGridW + minGap;
 
-        // Keep the visual relationship: boxes a little higher, grid a little lower.
-        gridTop = pairTop + (pairH - scaledGridH) * 0.68;
-        boxesTop = pairTop + (pairH - scaledBoxH) * 0.20;
+        gridTop = pairTop + (naturalPairH - scaledGridH) * 0.68;
+        boxesTop = pairTop + (naturalPairH - scaledBoxH) * 0.20;
       } else {
+        // Dense/tight problems: use the corners.
+        boxesLeft = contentLeft + contentW - scaledBoxW;
+        boxesTop = contentTop;
+
         gridLeft = contentLeft;
         gridTop = contentTop + contentH - scaledGridH;
 
-        boxesLeft = contentLeft + contentW - scaledBoxW;
-        boxesTop = contentTop;
+        // Final overlap protection using the measured bounding boxes.
+        const maxAllowedGridW = boxesLeft - minGap - gridLeft;
+        if (maxAllowedGridW < scaledGridW) {
+          gridScale *= Math.max(0.35, maxAllowedGridW / scaledGridW);
+          scaledGridW = gridNaturalW * gridScale;
+          scaledGridH = gridNaturalH * gridScale;
+          gridTop = contentTop + contentH - scaledGridH;
+        }
       }
 
       // Final clamp: nothing may clip.
