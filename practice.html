@@ -269,28 +269,37 @@
       font-size: 0.82rem;
     }
 
-    .actions-card {
+    .side-cards {
       display: grid;
       grid-template-columns: 1fr;
       gap: 14px;
       align-content: start;
     }
 
-    .action-group {
+    .compact-card {
       display: grid;
-      grid-template-columns: 1fr auto;
       gap: 8px;
-      align-items: end;
+      align-content: start;
     }
 
-    .action-group label {
-      grid-column: 1 / -1;
-      margin-bottom: -3px;
+    .compact-card h2 {
+      margin-bottom: 2px;
     }
 
-    .action-group input,
-    .action-group select {
+    .paired-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .paired-row input,
+    .paired-row select {
       min-width: 0;
+    }
+
+    .paired-row button {
+      white-space: nowrap;
     }
 
     .future-note {
@@ -359,7 +368,11 @@
         grid-template-columns: 1fr;
       }
 
-      .action-group {
+      .paired-row {
+        grid-template-columns: 1fr;
+      }
+
+      .side-cards {
         grid-template-columns: 1fr;
       }
 
@@ -472,22 +485,28 @@
           </p>
         </div>
 
-        <div class="control-card actions-card">
-          <div class="action-group">
+        <div class="side-cards">
+          <div class="control-card compact-card">
+            <h2>Randomness</h2>
             <label for="seed">Seed <span class="muted">(optional)</span></label>
-            <input id="seed" inputmode="numeric" placeholder="blank = random">
-            <button id="newSetBtn" type="button" class="secondary">New random set</button>
+            <div class="paired-row">
+              <input id="seed" inputmode="numeric" placeholder="blank = random">
+              <button id="newSetBtn" type="button" class="secondary">New set</button>
+            </div>
           </div>
 
-          <div class="action-group">
+          <div class="control-card compact-card">
+            <h2>Print style</h2>
             <label for="inkColor">Ink color</label>
-            <select id="inkColor">
-              <option value="#0000b8" selected>Blue</option>
-              <option value="#000000">Black</option>
-              <option value="#1c5d2f">Green</option>
-              <option value="#7b1f1f">Red-brown</option>
-            </select>
-            <button id="printBtn" type="button">Print</button>
+            <div class="paired-row">
+              <select id="inkColor">
+                <option value="#0000b8" selected>Blue</option>
+                <option value="#000000">Black</option>
+                <option value="#1c5d2f">Green</option>
+                <option value="#7b1f1f">Red-brown</option>
+              </select>
+              <button id="printBtn" type="button">Print</button>
+            </div>
           </div>
         </div>
       </div>
