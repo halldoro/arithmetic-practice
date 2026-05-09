@@ -171,12 +171,14 @@ The pieces form staggered horizontal rows, similar to brickwork.
 
 Example shape for a larger problem:
 
-```text
-      [ ][ ]
-   [ ][ ] [ ][ ]
-[ ][ ] [ ][ ] [ ][ ]
-   [ ][ ] [ ][ ]
-      [ ][ ]
+```mermaid
+block-beta
+  columns 5
+  space:2 p1["□ □"] space:2
+  space p2["□ □"] space p3["□ □"] space
+  p4["□ □"] space p5["□ □"] space p6["□ □"]
+  space p7["□ □"] space p8["□ □"] space
+  space:2 p9["□ □"] space:2
 ```
 
 The exact number of rows and pieces per row depends on the digit counts of the problem.
