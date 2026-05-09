@@ -749,12 +749,29 @@
     }
 
     .page {
+      position: relative;
       background: var(--paper);
       box-shadow: var(--shadow-lg), var(--page-ring);
       color: var(--ink);
       display: grid;
       gap: 2.2mm;
       padding: 2.2mm;
+    }
+
+    /* Seed stamp inside the worksheet — tiny print in the lower-right
+       corner so a parent/teacher can later regenerate the same problem
+       set (or run it with includeAnswer on) by pasting the value into
+       the seed input. */
+    .page-seed-label {
+      position: absolute;
+      bottom: 1.5mm;
+      right: 2mm;
+      font-size: 2.2mm;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      letter-spacing: 0.02em;
+      opacity: 0.4;
+      pointer-events: none;
+      user-select: none;
     }
 
     .page.portrait {
@@ -936,7 +953,7 @@
 </head>
 <body>
   <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle color theme">☾</button>
-  <span class="version-tag" aria-hidden="true">v24 SHA <span class="sha">__SHA__</span></span>
+  <span class="version-tag" aria-hidden="true">v25 SHA <span class="sha">__SHA__</span></span>
   <script>
     (function () {
       var sha = document.querySelector(".version-tag .sha");
@@ -1629,6 +1646,12 @@
           cell.classList.add("hidden");
         }
       }
+
+      const seedLabel = document.createElement("div");
+      seedLabel.className = "page-seed-label";
+      seedLabel.textContent = `seed: ${seed}`;
+      seedLabel.style.color = options.inkColor;
+      page.appendChild(seedLabel);
 
       setPrintOrientation(layout.orientation);
     }
