@@ -204,25 +204,32 @@
     }
 
     .tables-view {
+      display: grid;
+      grid-template-columns: minmax(260px, 300px) minmax(0, 1fr);
+      gap: 16px;
+      align-items: start;
       margin-bottom: 22px;
     }
 
-    .tables-intro {
-      background: var(--surface);
+    .tables-sidebar {
+      background: var(--surface-2);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      box-shadow: var(--shadow-md);
-      padding: 20px 22px;
-      margin-bottom: 18px;
+      border-radius: 9px;
+      padding: 12px 14px 14px;
     }
 
-    .tables-intro h2 {
-      margin: 0 0 10px;
+    .tables-sidebar h2 {
+      margin: 0 0 8px;
+      font-size: 0.95rem;
+      font-weight: 650;
+      letter-spacing: -0.005em;
     }
 
-    .tables-intro p {
-      margin: 0 0 14px;
-      line-height: 1.55;
+    .tables-sidebar p {
+      margin: 0 0 12px;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      color: var(--text-2);
     }
 
     .download-btn {
@@ -585,7 +592,8 @@
     }
 
     @media (max-width: 900px) {
-      .line-mult-layout {
+      .line-mult-layout,
+      .tables-view {
         grid-template-columns: 1fr;
       }
 
@@ -655,7 +663,7 @@
 </head>
 <body>
   <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle color theme">☾</button>
-  <span class="version-tag" aria-hidden="true">v7 SHA <span class="sha">__SHA__</span></span>
+  <span class="version-tag" aria-hidden="true">v8 SHA <span class="sha">__SHA__</span></span>
   <script>
     (function () {
       var sha = document.querySelector(".version-tag .sha");
@@ -704,13 +712,13 @@
     </div>
 
     <section class="tables-view" data-view="multiplicationTables">
-      <div class="tables-intro">
+      <aside class="tables-sidebar">
         <h2>Multiplication tables</h2>
         <p>
-          This site focuses on multi-digit multiplication. The single-digit products from 1×1 through 10×10 are the prerequisite — once those are automatic, the worksheets become quick practice instead of a struggle. Print this table and review it daily.
+          A printable multiplication table from 1×1 to 10×10. Memorize it before doing multi-digit multiplication.
         </p>
         <a class="download-btn" href="MultiplicationTable.pdf" download>Download PDF</a>
-      </div>
+      </aside>
       <iframe class="tables-pdf" src="MultiplicationTable.pdf" title="Multiplication tables PDF" loading="lazy"></iframe>
     </section>
 
