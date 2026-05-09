@@ -62,10 +62,40 @@
       margin-bottom: 22px;
     }
 
+    .exercise-tabs {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--ui-border);
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .exercise-tab {
+      border: 1px solid var(--ui-border);
+      background: white;
+      color: var(--text);
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-weight: 650;
+    }
+
+    .exercise-tab.active {
+      background: var(--ink);
+      color: white;
+      border-color: var(--ink);
+    }
+
+    .exercise-tab.disabled {
+      opacity: 0.42;
+      cursor: not-allowed;
+      background: #ececf1;
+    }
+
     .controls-layout {
       display: grid;
-      grid-template-columns: minmax(320px, 0.9fr) minmax(430px, 1.1fr);
-      gap: 16px;
+      grid-template-columns: minmax(230px, 0.8fr) minmax(420px, 1.35fr) minmax(260px, 0.95fr);
+      gap: 14px;
       align-items: stretch;
     }
 
@@ -82,31 +112,28 @@
       letter-spacing: -0.01em;
     }
 
-    .field-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 12px;
+    .problems-card {
+      display: flex;
+      flex-direction: column;
     }
 
     .count-grid {
       display: grid;
-      grid-template-columns: repeat(6, 34px);
-      grid-auto-rows: 34px;
-      gap: 5px;
+      grid-template-columns: repeat(3, 44px);
+      grid-template-rows: repeat(4, 44px);
+      gap: 7px;
       width: max-content;
-      max-width: 100%;
     }
 
     .count-button {
-      min-height: 34px;
-      width: 34px;
+      min-height: 44px;
+      width: 44px;
       padding: 0;
       border: 1px solid #a9abb6;
-      border-radius: 7px;
+      border-radius: 8px;
       background: #d9d9df;
       color: #333647;
-      font-size: 0.9rem;
+      font-size: 1rem;
       font-weight: 750;
     }
 
@@ -118,10 +145,6 @@
 
     .count-button:hover {
       transform: translateY(-1px);
-    }
-
-    .main-actions {
-      margin-top: 4px;
     }
 
     .size-card-header {
@@ -246,6 +269,30 @@
       font-size: 0.82rem;
     }
 
+    .actions-card {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .action-group {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: end;
+    }
+
+    .action-group label {
+      grid-column: 1 / -1;
+      margin-bottom: -3px;
+    }
+
+    .action-group input,
+    .action-group select {
+      min-width: 0;
+    }
+
     .future-note {
       margin-top: 13px;
       color: var(--muted);
@@ -308,12 +355,12 @@
         grid-template-columns: 1fr;
       }
 
-      .field-row {
+      .controls-layout {
         grid-template-columns: 1fr;
       }
 
-      .count-grid {
-        grid-template-columns: repeat(6, 34px);
+      .action-group {
+        grid-template-columns: 1fr;
       }
 
       .page.portrait,
@@ -377,48 +424,24 @@
 
   <main class="app">
     <section class="controls" aria-label="Worksheet controls">
+      <div class="exercise-tabs" role="tablist" aria-label="Exercise type">
+        <button class="exercise-tab active" type="button" role="tab" aria-selected="true" data-exercise="lineMultiplication">
+          Line multiplication
+        </button>
+        <button class="exercise-tab disabled" type="button" role="tab" aria-selected="false" disabled>
+          Multiplication tables
+        </button>
+        <button class="exercise-tab disabled" type="button" role="tab" aria-selected="false" disabled>
+          Division practice
+        </button>
+        <input id="exerciseType" type="hidden" value="lineMultiplication">
+      </div>
+
       <div class="controls-layout">
-        <div class="control-card setup-card">
-          <h2>Worksheet</h2>
-
-          <div class="field-row">
-            <div>
-              <label for="exerciseType">Exercise type</label>
-              <select id="exerciseType">
-                <option value="lineMultiplication">Line multiplication</option>
-                <option value="multiplicationTables" disabled>Multiplication tables — coming later</option>
-                <option value="division" disabled>Division practice — coming later</option>
-              </select>
-            </div>
-
-            <div>
-              <label>Problems</label>
-              <input id="problemCount" type="hidden" value="3">
-              <div id="problemCountGrid" class="count-grid" aria-label="Number of problems"></div>
-            </div>
-          </div>
-
-          <div class="field-row">
-            <div>
-              <label for="inkColor">Ink color</label>
-              <select id="inkColor">
-                <option value="#0000b8" selected>Blue</option>
-                <option value="#000000">Black</option>
-                <option value="#1c5d2f">Green</option>
-                <option value="#7b1f1f">Red-brown</option>
-              </select>
-            </div>
-
-            <div>
-              <label for="seed">Seed <span class="muted">(optional)</span></label>
-              <input id="seed" inputmode="numeric" placeholder="blank = random">
-            </div>
-          </div>
-
-          <div class="button-row main-actions">
-            <button id="newSetBtn" type="button" class="secondary">New random set</button>
-            <button id="printBtn" type="button">Print</button>
-          </div>
+        <div class="control-card problems-card">
+          <h2>Problems</h2>
+          <input id="problemCount" type="hidden" value="3">
+          <div id="problemCountGrid" class="count-grid" aria-label="Number of problems"></div>
         </div>
 
         <div class="control-card size-card">
@@ -448,10 +471,29 @@
             <strong>Fixed</strong> chooses only one exact size. 1×1 is not used.
           </p>
         </div>
+
+        <div class="control-card actions-card">
+          <div class="action-group">
+            <label for="seed">Seed <span class="muted">(optional)</span></label>
+            <input id="seed" inputmode="numeric" placeholder="blank = random">
+            <button id="newSetBtn" type="button" class="secondary">New random set</button>
+          </div>
+
+          <div class="action-group">
+            <label for="inkColor">Ink color</label>
+            <select id="inkColor">
+              <option value="#0000b8" selected>Blue</option>
+              <option value="#000000">Black</option>
+              <option value="#1c5d2f">Green</option>
+              <option value="#7b1f1f">Red-brown</option>
+            </select>
+            <button id="printBtn" type="button">Print</button>
+          </div>
+        </div>
       </div>
 
       <p class="future-note">
-        The worksheet updates automatically when options change. Use “New random set” for a fresh worksheet; it is disabled when a seed is set. Page orientation is automatic: 1–3 problems use portrait; 4–12 problems use landscape.
+        The worksheet updates automatically when options change. Page orientation is automatic: 1–3 problems use portrait; 4–12 problems use landscape.
       </p>
     </section>
 
