@@ -791,6 +791,7 @@
     }
 
     .problem-cell {
+      position: relative;
       border: 0.22mm solid var(--ink);
       overflow: hidden;
       display: flex;
@@ -986,7 +987,7 @@
     <div class="title-rail">
       <h1>Arithmetic Practice Sheets</h1>
       <p class="subtitle">Printable arithmetic worksheets for children.</p>
-      <span class="version-tag" aria-hidden="true">v27 SHA <span class="sha">__SHA__</span></span>
+      <span class="version-tag" aria-hidden="true">v28 SHA <span class="sha">__SHA__</span></span>
     </div>
   </header>
 
@@ -1637,6 +1638,7 @@
       const generator = exerciseTypes[options.exerciseType];
       const problems = generator.makeProblems(options, rand);
 
+      let lastVisibleCell = null;
       for (let i = 0; i < layout.rows * layout.cols; i++) {
         const cell = document.createElement("div");
         cell.className = "problem-cell";
@@ -1645,16 +1647,19 @@
         if (i < problems.length) {
           const svg = generator.renderProblem(problems[i], options);
           cell.appendChild(svg);
+          lastVisibleCell = cell;
         } else {
           cell.classList.add("hidden");
         }
       }
 
-      const seedLabel = document.createElement("div");
-      seedLabel.className = "page-seed-label";
-      seedLabel.textContent = `seed: ${seed}`;
-      seedLabel.style.color = options.inkColor;
-      page.appendChild(seedLabel);
+      if (lastVisibleCell) {
+        const seedLabel = document.createElement("div");
+        seedLabel.className = "page-seed-label";
+        seedLabel.textContent = `seed: ${seed}`;
+        seedLabel.style.color = options.inkColor;
+        lastVisibleCell.appendChild(seedLabel);
+      }
 
       setPrintOrientation(layout.orientation);
     }
