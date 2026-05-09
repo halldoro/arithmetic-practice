@@ -62,124 +62,88 @@
       margin-bottom: 22px;
     }
 
-    .controls-grid {
+    .controls-layout {
       display: grid;
-      grid-template-columns: repeat(6, minmax(120px, 1fr));
-      gap: 14px;
-      align-items: end;
+      grid-template-columns: minmax(320px, 0.9fr) minmax(430px, 1.1fr);
+      gap: 16px;
+      align-items: stretch;
     }
 
-    label {
-      display: block;
-      font-size: 0.82rem;
-      font-weight: 650;
-      margin-bottom: 5px;
-    }
-
-    select,
-    input {
-      width: 100%;
-      min-height: 38px;
-      border: 1px solid var(--ui-border);
-      background: var(--control-bg);
-      color: var(--text);
-      border-radius: 9px;
-      padding: 7px 9px;
-      font: inherit;
-    }
-
-    .button-row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    button {
-      min-height: 38px;
-      border: 1px solid #0000a6;
-      border-radius: 9px;
-      padding: 7px 13px;
-      background: var(--ink);
-      color: white;
-      font: inherit;
-      font-weight: 650;
-      cursor: pointer;
-    }
-
-    button.secondary {
-      background: white;
-      color: var(--ink);
-    }
-
-    button:active {
-      transform: translateY(1px);
-    }
-
-    button:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-
-    .problem-type-control {
-      position: relative;
-    }
-
-    .picker-button {
-      width: 100%;
-      min-height: 38px;
-      background: white;
-      color: var(--text);
-      border-color: var(--ui-border);
-      text-align: left;
-      font-weight: 500;
-    }
-
-    .problem-type-popover {
-      position: absolute;
-      z-index: 20;
-      top: calc(100% + 8px);
-      left: 0;
-      width: 290px;
-      padding: 12px;
-      background: white;
+    .control-card {
       border: 1px solid var(--ui-border);
       border-radius: 12px;
-      box-shadow: var(--shadow);
-      color: var(--text);
+      background: #fbfbfd;
+      padding: 14px;
     }
 
-    .picker-top-row {
+    .control-card h2 {
+      margin: 0 0 10px;
+      font-size: 1rem;
+      letter-spacing: -0.01em;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .main-actions {
+      margin-top: 4px;
+    }
+
+    .size-card-header {
       display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 10px;
+      align-items: start;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 12px;
     }
 
-    .small-button {
-      min-height: 30px;
-      padding: 4px 10px;
+    .size-card-header p {
+      margin: -5px 0 0;
+      color: var(--muted);
       font-size: 0.88rem;
     }
 
-    #pickerPreview {
-      color: var(--muted);
-      font-size: 0.86rem;
+    .mode-toggle {
+      display: inline-flex;
+      border: 1px solid var(--ui-border);
+      border-radius: 999px;
+      background: white;
+      padding: 3px;
       white-space: nowrap;
     }
 
-    .digit-grid-wrap {
+    .mode-button {
+      min-height: 30px;
+      border: 0;
+      border-radius: 999px;
+      padding: 4px 11px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .mode-button.active {
+      background: var(--ink);
+      color: white;
+    }
+
+    .digit-grid-panel {
       display: grid;
-      grid-template-columns: 28px auto;
+      grid-template-columns: 32px auto;
       grid-template-rows: 22px auto;
-      gap: 5px;
+      gap: 6px;
       align-items: center;
+      width: max-content;
+      max-width: 100%;
     }
 
     .axis-label {
       color: var(--muted);
-      font-size: 0.72rem;
+      font-size: 0.74rem;
       line-height: 1.05;
       user-select: none;
     }
@@ -203,12 +167,12 @@
       grid-column: 2;
       grid-row: 2;
       display: grid;
-      grid-template-columns: repeat(4, 42px);
-      grid-template-rows: repeat(4, 42px);
-      gap: 5px;
-      padding: 3px;
+      grid-template-columns: repeat(4, 46px);
+      grid-template-rows: repeat(4, 46px);
+      gap: 6px;
+      padding: 5px;
       background: #f0f0f3;
-      border-radius: 8px;
+      border-radius: 10px;
       width: max-content;
     }
 
@@ -216,14 +180,19 @@
       border: 1px solid #a9abb6;
       background: #d9d9df;
       color: #333647;
-      border-radius: 5px;
+      border-radius: 7px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 700;
-      font-size: 0.85rem;
+      font-weight: 750;
+      font-size: 0.9rem;
       cursor: pointer;
       user-select: none;
+      transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
+    }
+
+    .digit-cell:hover {
+      transform: translateY(-1px);
     }
 
     .digit-cell.preview,
@@ -237,12 +206,13 @@
       cursor: not-allowed;
       background: #d9d9df;
       border-color: #b8bac3;
+      transform: none;
     }
 
     .picker-help {
       margin: 10px 0 0;
       color: var(--muted);
-      font-size: 0.78rem;
+      font-size: 0.82rem;
     }
 
     .future-note {
@@ -303,8 +273,12 @@
     }
 
     @media (max-width: 900px) {
-      .controls-grid {
-        grid-template-columns: repeat(2, minmax(140px, 1fr));
+      .controls-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .field-row {
+        grid-template-columns: 1fr;
       }
 
       .page.portrait,
@@ -368,83 +342,93 @@
 
   <main class="app">
     <section class="controls" aria-label="Worksheet controls">
-      <div class="controls-grid">
-        <div>
-          <label for="exerciseType">Exercise type</label>
-          <select id="exerciseType">
-            <option value="lineMultiplication">Line multiplication</option>
-            <option value="multiplicationTables" disabled>Multiplication tables — coming later</option>
-            <option value="division" disabled>Division practice — coming later</option>
-          </select>
-        </div>
+      <div class="controls-layout">
+        <div class="control-card setup-card">
+          <h2>Worksheet</h2>
 
-        <div>
-          <label for="problemCount">Number of problems</label>
-          <select id="problemCount">
-            <option>1</option>
-            <option>2</option>
-            <option selected>3</option>
-            <option>4</option>
-            <option>5</option>
-            <option>6</option>
-            <option>7</option>
-            <option>8</option>
-            <option>9</option>
-            <option>10</option>
-            <option>11</option>
-            <option>12</option>
-          </select>
-        </div>
-
-        <div class="problem-type-control">
-          <label for="problemTypeButton">Problem type</label>
-          <button id="problemTypeButton" type="button" class="picker-button" aria-haspopup="dialog" aria-expanded="false">
-            Random 1–4 digits, not 1×1
-          </button>
-          <input id="problemType" type="hidden" value="random">
-
-          <div id="problemTypePopover" class="problem-type-popover hidden" role="dialog" aria-label="Choose problem type">
-            <div class="picker-top-row">
-              <button id="randomTypeBtn" type="button" class="secondary small-button">Random</button>
-              <span id="pickerPreview">Hover or click a square</span>
+          <div class="field-row">
+            <div>
+              <label for="exerciseType">Exercise type</label>
+              <select id="exerciseType">
+                <option value="lineMultiplication">Line multiplication</option>
+                <option value="multiplicationTables" disabled>Multiplication tables — coming later</option>
+                <option value="division" disabled>Division practice — coming later</option>
+              </select>
             </div>
 
-            <div class="digit-grid-wrap">
-              <div class="axis-label top-axis">digits in second number</div>
-              <div class="axis-label left-axis">digits in first number</div>
-              <div id="digitGrid" class="digit-grid" aria-label="Digit-count grid"></div>
+            <div>
+              <label for="problemCount">Problems</label>
+              <select id="problemCount">
+                <option>1</option>
+                <option>2</option>
+                <option selected>3</option>
+                <option>4</option>
+                <option>5</option>
+                <option>6</option>
+                <option>7</option>
+                <option>8</option>
+                <option>9</option>
+                <option>10</option>
+                <option>11</option>
+                <option>12</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div>
+              <label for="inkColor">Ink color</label>
+              <select id="inkColor">
+                <option value="#0000b8" selected>Blue</option>
+                <option value="#000000">Black</option>
+                <option value="#1c5d2f">Green</option>
+                <option value="#7b1f1f">Red-brown</option>
+              </select>
             </div>
 
-            <p class="picker-help">
-              Hover to preview: yellow squares from the top-left show the chosen digit pattern.
-              Click to choose. The 1×1 case is disabled.
-            </p>
+            <div>
+              <label for="seed">Seed <span class="muted">(optional)</span></label>
+              <input id="seed" inputmode="numeric" placeholder="blank = random">
+            </div>
+          </div>
+
+          <div class="button-row main-actions">
+            <button id="newSetBtn" type="button" class="secondary">New random set</button>
+            <button id="printBtn" type="button">Print</button>
           </div>
         </div>
 
-        <div>
-          <label for="inkColor">Ink color</label>
-          <select id="inkColor">
-            <option value="#0000b8" selected>Blue</option>
-            <option value="#000000">Black</option>
-            <option value="#1c5d2f">Green</option>
-            <option value="#7b1f1f">Red-brown</option>
-          </select>
-        </div>
+        <div class="control-card size-card">
+          <div class="size-card-header">
+            <div>
+              <h2>Problem size</h2>
+              <p id="problemTypeSummary">Range: up to 4×4 digits</p>
+            </div>
 
-        <div>
-          <label for="seed">Seed <span class="muted">(optional)</span></label>
-          <input id="seed" inputmode="numeric" placeholder="blank = random">
-        </div>
+            <div class="mode-toggle" role="group" aria-label="Problem size mode">
+              <button id="rangeModeBtn" type="button" class="mode-button active">Range</button>
+              <button id="fixedModeBtn" type="button" class="mode-button">Fixed</button>
+            </div>
+          </div>
 
-        <div class="button-row">
-          <button id="newSetBtn" type="button" class="secondary">New random set</button>
-          <button id="printBtn" type="button">Print</button>
+          <input id="problemType" type="hidden" value="4x4">
+          <input id="problemMode" type="hidden" value="range">
+
+          <div class="digit-grid-panel">
+            <div class="axis-label top-axis">digits in second number</div>
+            <div class="axis-label left-axis">digits in first number</div>
+            <div id="digitGrid" class="digit-grid" aria-label="Digit-count grid"></div>
+          </div>
+
+          <p class="picker-help">
+            <strong>Range</strong> chooses all valid sizes up to the selected square.
+            <strong>Fixed</strong> chooses only one exact size. 1×1 is not used.
+          </p>
         </div>
       </div>
 
       <p class="future-note">
-        The worksheet updates automatically when options change. Single-digit numbers are allowed, but not on both sides at once. Use “New random set” for a fresh worksheet; it is disabled when a seed is set. Page orientation is automatic: 1–3 problems use portrait; 4–12 problems use landscape.
+        The worksheet updates automatically when options change. Use “New random set” for a fresh worksheet; it is disabled when a seed is set. Page orientation is automatic: 1–3 problems use portrait; 4–12 problems use landscape.
       </p>
     </section>
 
@@ -490,35 +474,25 @@
       return first + rest;
     }
 
-    function chooseDigits(rand, problemType) {
-      if (problemType === "random") {
-        let left;
-        let right;
-
-        // Allow one side to be a single-digit number, but never both.
-        // Examples allowed: 1x2, 1x4, 2x1, 4x1, 3x4.
-        // Example forbidden: 1x1.
-        do {
-          left = randomInt(rand, 1, 4);
-          right = randomInt(rand, 1, 4);
-        } while (left === 1 && right === 1);
-
-        return [left, right];
-      }
-
+    function chooseDigits(rand, problemType, problemMode) {
       const match = problemType.match(/^([1-4])x([1-4])$/);
-      if (!match) {
-        return [2, 2];
+      const selectedLeft = match ? Number(match[1]) : 4;
+      const selectedRight = match ? Number(match[2]) : 4;
+
+      if (problemMode === "fixed") {
+        if (selectedLeft === 1 && selectedRight === 1) return [1, 2];
+        return [selectedLeft, selectedRight];
       }
 
-      const left = Number(match[1]);
-      const right = Number(match[2]);
-
-      // 1x1 is intentionally not offered in the UI, but keep this guard in
-      // case someone edits the HTML or calls the function from the console.
-      if (left === 1 && right === 1) {
-        return [1, 2];
-      }
+      // Range mode: choose any valid size inside the selected rectangle,
+      // excluding only 1x1.  Example: selected 4x4 means all valid sizes up
+      // to 4x4; selected 2x3 means 1x2, 1x3, 2x1, 2x2, 2x3.
+      let left;
+      let right;
+      do {
+        left = randomInt(rand, 1, selectedLeft);
+        right = randomInt(rand, 1, selectedRight);
+      } while (left === 1 && right === 1);
 
       return [left, right];
     }
@@ -526,7 +500,7 @@
     function makeProblems(options, rand) {
       const problems = [];
       for (let i = 0; i < options.count; i++) {
-        const [leftDigits, rightDigits] = chooseDigits(rand, options.problemType);
+        const [leftDigits, rightDigits] = chooseDigits(rand, options.problemType, options.problemMode);
         problems.push({
           left: randomNumber(rand, leftDigits),
           right: randomNumber(rand, rightDigits)
@@ -890,6 +864,7 @@
         exerciseType: document.getElementById("exerciseType").value,
         count: Number(document.getElementById("problemCount").value),
         problemType: document.getElementById("problemType").value,
+        problemMode: document.getElementById("problemMode").value,
         inkColor: document.getElementById("inkColor").value,
         seedText: document.getElementById("seed").value.trim()
       };
@@ -961,51 +936,69 @@
     }
 
 
-    function problemTypeLabel(value) {
-      if (value === "random") return "Random 1–4 digits, not 1×1";
+    function problemTypeLabel(value, mode = document.getElementById("problemMode")?.value || "range") {
       const [left, right] = value.split("x");
-      return `${left} × ${right} digits`;
+      if (mode === "fixed") return `Fixed: ${left}×${right} digits`;
+      return `Range: up to ${left}×${right} digits`;
+    }
+
+    function activeProblemTypeValues(value, mode) {
+      if (value === "random") value = "4x4";
+      const [rows, cols] = value.split("x").map(Number);
+      const values = new Set();
+
+      if (mode === "fixed") {
+        if (!(rows === 1 && cols === 1)) values.add(`${rows}x${cols}`);
+        return values;
+      }
+
+      for (let r = 1; r <= rows; r++) {
+        for (let c = 1; c <= cols; c++) {
+          if (!(r === 1 && c === 1)) values.add(`${r}x${c}`);
+        }
+      }
+
+      return values;
+    }
+
+    function setProblemMode(mode, { regenerate = true } = {}) {
+      document.getElementById("problemMode").value = mode;
+      document.getElementById("rangeModeBtn").classList.toggle("active", mode === "range");
+      document.getElementById("fixedModeBtn").classList.toggle("active", mode === "fixed");
+      updateDigitGridSelection();
+
+      if (regenerate) {
+        if (!isSeeded()) randomSalt = Math.floor(Math.random() * 0xffffffff);
+        createProblemSet();
+      }
     }
 
     function setProblemType(value, { regenerate = true } = {}) {
       const hidden = document.getElementById("problemType");
       hidden.value = value;
-      document.getElementById("problemTypeButton").textContent = problemTypeLabel(value);
-
-      if (value === "random") {
-        document.getElementById("pickerPreview").textContent = "Random 1–4, not 1×1";
-      } else {
-        document.getElementById("pickerPreview").textContent = problemTypeLabel(value);
-      }
-
-      updateDigitGridSelection(value);
+      updateDigitGridSelection();
 
       if (regenerate) {
         if (!isSeeded()) randomSalt = Math.floor(Math.random() * 0xffffffff);
-        initializeProblemTypePicker();
-    createProblemSet();
+        createProblemSet();
       }
     }
 
-    function updateDigitGridSelection(value, previewValue = null) {
-      const active = previewValue || value;
+    function updateDigitGridSelection(previewValue = null) {
+      const value = document.getElementById("problemType").value;
+      const mode = document.getElementById("problemMode").value;
+      const active = activeProblemTypeValues(previewValue || value, mode);
       const cells = [...document.querySelectorAll(".digit-cell")];
 
       for (const cell of cells) {
         cell.classList.remove("selected", "preview");
-
         const cellValue = cell.dataset.value;
-        if (!cellValue) continue;
-
-        const [cellRows, cellCols] = cellValue.split("x").map(Number);
-
-        if (active !== "random") {
-          const [activeRows, activeCols] = active.split("x").map(Number);
-          if (cellRows <= activeRows && cellCols <= activeCols) {
-            cell.classList.add(previewValue ? "preview" : "selected");
-          }
-        }
+        if (!cellValue || !active.has(cellValue)) continue;
+        cell.classList.add(previewValue ? "preview" : "selected");
       }
+
+      const summaryValue = previewValue || value;
+      document.getElementById("problemTypeSummary").textContent = problemTypeLabel(summaryValue, mode);
     }
 
     function buildDigitGrid() {
@@ -1023,76 +1016,24 @@
             cell.classList.add("disabled");
             cell.title = "1×1 is not used";
           } else {
-            cell.addEventListener("mouseenter", () => {
-              const value = `${row}x${col}`;
-              updateDigitGridSelection(document.getElementById("problemType").value, value);
-              document.getElementById("pickerPreview").textContent = problemTypeLabel(value);
-            });
-
-            cell.addEventListener("click", () => {
-              setProblemType(`${row}x${col}`);
-              closeProblemTypePopover();
-            });
+            cell.addEventListener("mouseenter", () => updateDigitGridSelection(`${row}x${col}`));
+            cell.addEventListener("click", () => setProblemType(`${row}x${col}`));
           }
 
           grid.appendChild(cell);
         }
       }
 
-      grid.addEventListener("mouseleave", () => {
-        const value = document.getElementById("problemType").value;
-        updateDigitGridSelection(value);
-        document.getElementById("pickerPreview").textContent = problemTypeLabel(value);
-      });
-
-      updateDigitGridSelection(document.getElementById("problemType").value);
-    }
-
-    function openProblemTypePopover() {
-      const popover = document.getElementById("problemTypePopover");
-      const button = document.getElementById("problemTypeButton");
-      popover.classList.remove("hidden");
-      button.setAttribute("aria-expanded", "true");
-    }
-
-    function closeProblemTypePopover() {
-      const popover = document.getElementById("problemTypePopover");
-      const button = document.getElementById("problemTypeButton");
-      popover.classList.add("hidden");
-      button.setAttribute("aria-expanded", "false");
-    }
-
-    function toggleProblemTypePopover() {
-      if (document.getElementById("problemTypePopover").classList.contains("hidden")) {
-        openProblemTypePopover();
-      } else {
-        closeProblemTypePopover();
-      }
+      grid.addEventListener("mouseleave", () => updateDigitGridSelection());
+      updateDigitGridSelection();
     }
 
     function initializeProblemTypePicker() {
       buildDigitGrid();
-
-      document.getElementById("problemTypeButton").addEventListener("click", (event) => {
-        event.stopPropagation();
-        toggleProblemTypePopover();
-      });
-
-      document.getElementById("problemTypePopover").addEventListener("click", (event) => {
-        event.stopPropagation();
-      });
-
-      document.getElementById("randomTypeBtn").addEventListener("click", () => {
-        setProblemType("random");
-        closeProblemTypePopover();
-      });
-
-      document.addEventListener("click", closeProblemTypePopover);
-      document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape") closeProblemTypePopover();
-      });
+      document.getElementById("rangeModeBtn").addEventListener("click", () => setProblemMode("range"));
+      document.getElementById("fixedModeBtn").addEventListener("click", () => setProblemMode("fixed"));
+      updateDigitGridSelection();
     }
-
 
     let regenerateTimer = null;
 
