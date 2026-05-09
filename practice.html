@@ -89,6 +89,37 @@
       margin-bottom: 12px;
     }
 
+    .count-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 34px);
+      grid-auto-rows: 34px;
+      gap: 5px;
+      width: max-content;
+      max-width: 100%;
+    }
+
+    .count-button {
+      min-height: 34px;
+      width: 34px;
+      padding: 0;
+      border: 1px solid #a9abb6;
+      border-radius: 7px;
+      background: #d9d9df;
+      color: #333647;
+      font-size: 0.9rem;
+      font-weight: 750;
+    }
+
+    .count-button.active {
+      background: #ffd84d;
+      border-color: #c49b00;
+      color: #1f2330;
+    }
+
+    .count-button:hover {
+      transform: translateY(-1px);
+    }
+
     .main-actions {
       margin-top: 4px;
     }
@@ -281,6 +312,10 @@
         grid-template-columns: 1fr;
       }
 
+      .count-grid {
+        grid-template-columns: repeat(6, 34px);
+      }
+
       .page.portrait,
       .page.landscape {
         transform-origin: top center;
@@ -357,21 +392,9 @@
             </div>
 
             <div>
-              <label for="problemCount">Problems</label>
-              <select id="problemCount">
-                <option>1</option>
-                <option>2</option>
-                <option selected>3</option>
-                <option>4</option>
-                <option>5</option>
-                <option>6</option>
-                <option>7</option>
-                <option>8</option>
-                <option>9</option>
-                <option>10</option>
-                <option>11</option>
-                <option>12</option>
-              </select>
+              <label>Problems</label>
+              <input id="problemCount" type="hidden" value="3">
+              <div id="problemCountGrid" class="count-grid" aria-label="Number of problems"></div>
             </div>
           </div>
 
@@ -1070,6 +1093,37 @@
       updateDigitGridSelection();
     }
 
+    function setProblemCount(count, { regenerate = true } = {}) {
+      document.getElementById("problemCount").value = String(count);
+
+      for (const btn of document.querySelectorAll(".count-button")) {
+        btn.classList.toggle("active", Number(btn.dataset.count) === count);
+      }
+
+      if (regenerate) {
+        if (!isSeeded()) randomSalt = Math.floor(Math.random() * 0xffffffff);
+        createProblemSet();
+      }
+    }
+
+    function buildProblemCountGrid() {
+      const grid = document.getElementById("problemCountGrid");
+      grid.innerHTML = "";
+
+      for (let count = 1; count <= 12; count++) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "count-button";
+        btn.dataset.count = String(count);
+        btn.textContent = String(count);
+        btn.title = `${count} problem${count === 1 ? "" : "s"}`;
+        btn.addEventListener("click", () => setProblemCount(count));
+        grid.appendChild(btn);
+      }
+
+      setProblemCount(Number(document.getElementById("problemCount").value), { regenerate: false });
+    }
+
     function initializeProblemTypePicker() {
       buildDigitGrid();
       document.getElementById("rangeModeBtn").addEventListener("click", () => setProblemMode("range"));
@@ -1084,10 +1138,11 @@
       regenerateTimer = window.setTimeout(createProblemSet, 180);
     }
 
-    for (const id of ["exerciseType", "problemCount"]) {
+    for (const id of ["exerciseType"]) {
       document.getElementById(id).addEventListener("change", () => {
         if (!isSeeded()) randomSalt = Math.floor(Math.random() * 0xffffffff);
-        initializeProblemTypePicker();
+        buildProblemCountGrid();
+    initializeProblemTypePicker();
     createProblemSet();
       });
     }
@@ -1099,12 +1154,14 @@
     document.getElementById("newSetBtn").addEventListener("click", () => {
       if (isSeeded()) return;
       randomSalt = Math.floor(Math.random() * 0xffffffff);
-      initializeProblemTypePicker();
+      buildProblemCountGrid();
+    initializeProblemTypePicker();
     createProblemSet();
     });
 
     document.getElementById("printBtn").addEventListener("click", () => window.print());
 
+    buildProblemCountGrid();
     initializeProblemTypePicker();
     createProblemSet();
   </script>
