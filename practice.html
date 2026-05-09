@@ -505,8 +505,8 @@
 
       function boxBBox() {
         const rows = visualRows(m, n);
-        const square = 81;
-        const gap = 13;
+        const square = 97;
+        const gap = 16;
         const squareStep = square + gap / 2;
         const rowStep = square + gap;
 
@@ -542,17 +542,19 @@
 
       // The box image is the writing area, so it gets priority.  It is scaled
       // only when a 4x4-style case would otherwise clip vertically or horizontally.
-      const maxBoxW = svgW * 0.52;
+      const maxBoxW = svgW * 0.62;
       const maxBoxH = svgH - titleBand - 2 * outerPad;
       const boxScale = Math.min(1, maxBoxW / bb.width, maxBoxH / bb.height);
 
       const scaledBoxW = bb.width * boxScale;
       const scaledBoxH = bb.height * boxScale;
 
-      // Place mathBoxes safely in the upper-right/right side, but never beyond
-      // the problem boundary.
+      // Place mathBoxes high on the right side, using the known bounding box.
+      // The top edge is fixed near the title band; the right edge is kept
+      // inside the problem boundary. This uses the available upper space and
+      // prevents clipping even for 4x4 problems.
       const boxesLeft = svgW - outerPad - scaledBoxW;
-      const boxesTop = titleBand + Math.max(0, (svgH - titleBand - scaledBoxH) * 0.22);
+      const boxesTop = titleBand + 18;
       const boxesCx = boxesLeft + scaledBoxW / 2;
       const boxesCy = boxesTop + scaledBoxH / 2;
 
@@ -569,7 +571,7 @@
 
       // Place the grid lower-left in its allowed region.
       const gridLeft = outerPad;
-      const gridTop = titleBand + gridAvailH - scaledGridH - 12;
+      const gridTop = titleBand + gridAvailH - scaledGridH - 4;
       const gridTx = gridLeft - gb.minX * gridScale;
       const gridTy = gridTop - gb.minY * gridScale;
 
@@ -643,8 +645,8 @@
     function drawMathBoxes(parent, m, n, ink, precomputed = null) {
       const data = precomputed || (() => {
         const rows = visualRows(m, n);
-        const square = 81;
-        const gap = 13;
+        const square = 97;
+        const gap = 16;
         const squareStep = square + gap / 2;
         const rowStep = square + gap;
         const allX = [];
@@ -671,7 +673,7 @@
           height: square,
           fill: "white",
           stroke: ink,
-          "stroke-width": 4.7
+          "stroke-width": 5.6
         }, parent);
 
         svgEl("line", {
@@ -680,7 +682,7 @@
           x2: x + square,
           y2: y + square,
           stroke: ink,
-          "stroke-width": 4.7
+          "stroke-width": 5.6
         }, parent);
       }
 
