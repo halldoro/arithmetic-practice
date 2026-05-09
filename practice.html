@@ -298,13 +298,12 @@
         </div>
 
         <div class="button-row">
-          <button id="createBtn" type="button">Create problem set</button>
-          <button id="printBtn" type="button" class="secondary">Print</button>
+          <button id="printBtn" type="button">Print</button>
         </div>
       </div>
 
       <p class="future-note">
-        Page orientation is automatic: 1–3 problems use portrait; 4–12 problems use landscape.
+        The worksheet updates automatically whenever you change an option. Page orientation is automatic: 1–3 problems use portrait; 4–12 problems use landscape.
       </p>
     </section>
 
@@ -671,7 +670,18 @@
       `;
     }
 
-    document.getElementById("createBtn").addEventListener("click", createProblemSet);
+    let regenerateTimer = null;
+
+    function scheduleRegeneration() {
+      window.clearTimeout(regenerateTimer);
+      regenerateTimer = window.setTimeout(createProblemSet, 180);
+    }
+
+    for (const id of ["exerciseType", "problemCount", "problemType", "inkColor"]) {
+      document.getElementById(id).addEventListener("change", createProblemSet);
+    }
+
+    document.getElementById("seed").addEventListener("input", scheduleRegeneration);
     document.getElementById("printBtn").addEventListener("click", () => window.print());
 
     createProblemSet();
