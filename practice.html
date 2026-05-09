@@ -448,15 +448,15 @@
       // The grid sits in the lower-left part of the problem box.
       // Larger digit counts push it a little further down-left, leaving
       // room for mathBoxes in the upper-right.
-      const gridX = 250 - Math.max(0, n - 3) * 18;
-      const gridY = 405 + Math.max(0, m - 3) * 16;
+      const gridX = 235 - Math.max(0, n - 3) * 24;
+      const gridY = 420 + Math.max(0, m - 3) * 20;
       const gridGroup = svgEl("g", {
         transform: `translate(${gridX} ${gridY})`
       }, svg);
 
-      const sep = 86;
-      const margin = 34;
-      const labelOffset = 36;
+      const sep = 103;
+      const margin = 41;
+      const labelOffset = 43;
       const rt = Math.SQRT1_2;
 
       function pt(u, v) {
@@ -478,7 +478,7 @@
           x2: p2.x,
           y2: p2.y,
           stroke: ink,
-          "stroke-width": 4.8,
+          "stroke-width": 5.8,
           "stroke-linecap": "round"
         }, gridGroup);
       }
@@ -501,7 +501,7 @@
           svgEl("circle", {
             cx: p.x,
             cy: p.y,
-            r: 11.8,
+            r: 14.2,
             fill: ink
           }, gridGroup);
         }
@@ -512,7 +512,7 @@
         const p = pt(uMin - labelOffset, v);
         addText(gridGroup, leftDigits[i], p.x, p.y, {
           fill: ink,
-          "font-size": 43,
+          "font-size": 52,
           "text-anchor": "end"
         });
       }
@@ -522,7 +522,7 @@
         const p = pt(u, vMin - labelOffset);
         addText(gridGroup, rightDigits[j], p.x, p.y, {
           fill: ink,
-          "font-size": 43,
+          "font-size": 52,
           "text-anchor": "middle"
         });
       }
@@ -531,8 +531,8 @@
       // For larger problems, move them further right and a little upward
       // so they do not cover the line grid while preserving the same
       // brick-lattice symmetry.
-      const boxesX = 785 + Math.max(0, n - 3) * 42 + Math.max(0, m - 3) * 22;
-      const boxesY = 285 - Math.max(0, m - 3) * 18;
+      const boxesX = 835 + Math.max(0, n - 3) * 48 + Math.max(0, m - 3) * 26;
+      const boxesY = 270 - Math.max(0, m - 3) * 22;
       const boxesGroup = svgEl("g", {
         transform: `translate(${boxesX} ${boxesY})`
       }, svg);
@@ -545,8 +545,8 @@
     function drawMathBoxes(parent, m, n, ink) {
       const rows = visualRows(m, n);
 
-      const square = 52;
-      const gap = 8;
+      const square = 62;
+      const gap = 10;
       const squareStep = square + gap / 2;
       const rowStep = square + gap;
 
@@ -573,7 +573,7 @@
           height: square,
           fill: "white",
           stroke: ink,
-          "stroke-width": 3.0
+          "stroke-width": 3.6
         }, parent);
 
         svgEl("line", {
@@ -582,7 +582,7 @@
           x2: x + square,
           y2: y + square,
           stroke: ink,
-          "stroke-width": 3.0
+          "stroke-width": 3.6
         }, parent);
       }
 
