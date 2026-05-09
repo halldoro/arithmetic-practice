@@ -606,6 +606,64 @@
       outline-offset: 2px;
     }
 
+    /* Current-seed indicator inside the Randomness card. Click to copy;
+       a transient "Copied!" badge fades in via the .copied class. */
+    .seed-display {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .seed-current {
+      position: relative;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.78rem;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      color: var(--text-2);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 6px;
+      cursor: pointer;
+      transition: background 150ms ease, border-color 150ms ease, transform 80ms ease;
+    }
+
+    .seed-current:hover {
+      background: var(--surface-2);
+      border-color: var(--border-strong);
+    }
+
+    .seed-current:active {
+      transform: scale(0.97);
+    }
+
+    .seed-current::after {
+      content: "Copied!";
+      position: absolute;
+      left: 50%;
+      bottom: calc(100% + 6px);
+      transform: translateX(-50%) translateY(3px);
+      background: var(--accent);
+      color: var(--accent-fg);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms ease, transform 180ms ease;
+      white-space: nowrap;
+    }
+
+    .seed-current.copied::after {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
     .paired-row {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
@@ -819,7 +877,7 @@
 </head>
 <body>
   <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle color theme">☾</button>
-  <span class="version-tag" aria-hidden="true">v17 SHA <span class="sha">__SHA__</span></span>
+  <span class="version-tag" aria-hidden="true">v18 SHA <span class="sha">__SHA__</span></span>
   <script>
     (function () {
       var sha = document.querySelector(".version-tag .sha");
@@ -930,6 +988,10 @@
             <input id="seed" inputmode="numeric" placeholder="blank = random">
             <button id="newSetBtn" type="button" class="secondary">New set</button>
           </div>
+          <div class="seed-display">
+            <span>Current:</span>
+            <button id="currentSeed" type="button" class="seed-current" title="Click to copy seed"></button>
+          </div>
         </div>
 
         <div class="control-card compact-card card-answers">
@@ -990,6 +1052,16 @@
         h = Math.imul(h, 16777619);
       }
       return h >>> 0;
+    }
+
+    // Resolve the seed input. A purely numeric string is used as-is so
+    // that the current-seed badge can be copy/pasted back to reproduce
+    // exactly the same worksheet. Non-numeric text still goes through
+    // the FNV-style hash.
+    function resolveSeedText(seedText) {
+      if (!seedText) return null;
+      if (/^\d+$/.test(seedText)) return Number(seedText) >>> 0;
+      return hashStringToSeed(seedText);
     }
 
     function randomInt(rand, min, maxInclusive) {
@@ -1472,9 +1544,9 @@
       page.style.gridTemplateRows = `repeat(${layout.rows}, 1fr)`;
       page.innerHTML = "";
 
-      const seed = options.seedText
-        ? hashStringToSeed(options.seedText)
-        : randomSalt;
+      const seed = resolveSeedText(options.seedText) ?? randomSalt;
+      const seedDisplay = document.getElementById("currentSeed");
+      if (seedDisplay) seedDisplay.textContent = String(seed);
 
       const rand = mulberry32(seed);
       const generator = exerciseTypes[options.exerciseType];
@@ -1673,6 +1745,24 @@
     });
 
     document.getElementById("printBtn").addEventListener("click", () => window.print());
+
+    // Click the current-seed badge to copy its value to the clipboard.
+    // Class toggle + force-reflow re-triggers the CSS fade animation on
+    // every click (so the "Copied!" badge re-flashes on rapid clicks).
+    document.getElementById("currentSeed").addEventListener("click", async () => {
+      const btn = document.getElementById("currentSeed");
+      const value = btn.textContent.trim();
+      if (!value) return;
+      try {
+        await navigator.clipboard.writeText(value);
+      } catch (_) {
+        return;
+      }
+      btn.classList.remove("copied");
+      void btn.offsetWidth;
+      btn.classList.add("copied");
+      setTimeout(() => btn.classList.remove("copied"), 1100);
+    });
 
     // Print the embedded multiplication-table PDF. Try the iframe's own
     // print() first; fall back to opening the PDF in a new tab if the
