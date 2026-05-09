@@ -348,30 +348,38 @@
       font-size: 0.88rem;
     }
 
+    /* Compact segmented control — same visual language as .exercise-tabs. */
     .mode-toggle {
       display: inline-flex;
+      gap: 2px;
+      background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 999px;
-      background: var(--surface-2);
-      padding: 3px;
+      border-radius: 7px;
+      padding: 2px;
       white-space: nowrap;
     }
 
     .mode-button {
-      min-height: 30px;
+      min-height: 26px;
       border: 0;
-      border-radius: 999px;
-      padding: 4px 11px;
+      border-radius: 5px;
+      padding: 3px 12px;
       background: transparent;
       color: var(--muted);
-      font-size: 0.88rem;
+      font-size: 0.85rem;
+      font-weight: 600;
       cursor: pointer;
-      transition: background 150ms ease, color 150ms ease;
+      transition: background 150ms ease, color 150ms ease, box-shadow 150ms ease;
+    }
+
+    .mode-button:hover:not(.active) {
+      color: var(--text);
     }
 
     .mode-button.active {
-      background: var(--accent);
-      color: var(--accent-fg);
+      background: var(--surface-2);
+      color: var(--text);
+      box-shadow: var(--shadow-sm);
     }
 
     .digit-grid-panel {
@@ -727,7 +735,7 @@
 </head>
 <body>
   <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle color theme">☾</button>
-  <span class="version-tag" aria-hidden="true">v11 SHA <span class="sha">__SHA__</span></span>
+  <span class="version-tag" aria-hidden="true">v12 SHA <span class="sha">__SHA__</span></span>
   <script>
     (function () {
       var sha = document.querySelector(".version-tag .sha");
