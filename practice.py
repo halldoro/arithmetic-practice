@@ -20,23 +20,54 @@ Examples:
   python3 generate_multiplication_worksheet.py 3
   python3 generate_multiplication_worksheet.py 12 --seed 1234
   python3 generate_multiplication_worksheet.py 6 --no-open
+  python3 generate_multiplication_worksheet.py 6 2x4
+  python3 generate_multiplication_worksheet.py 2 4x4
 """
 
 import argparse
 import math
 import random
+import re
 import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 
-def random_number(min_digits=2, max_digits=4):
-    """Generate a random integer with 2–4 digits. Leading digit is never zero."""
-    digits = random.randint(min_digits, max_digits)
+def random_number(min_digits=2, max_digits=4, digits=None):
+    """
+    Generate a random integer as a string.
+
+    If digits is provided, generate exactly that many digits.
+    Otherwise generate a random length between min_digits and max_digits.
+    The leading digit is never zero; later digits may be zero.
+    """
+    if digits is None:
+        digits = random.randint(min_digits, max_digits)
+
     first = str(random.randint(1, 9))
     rest = "".join(str(random.randint(0, 9)) for _ in range(digits - 1))
     return first + rest
+
+
+def parse_problem_type(problem_type):
+    """
+    Parse an optional problem type such as '2x4', '3X2', or '4*4'.
+
+    Returns:
+        None, or a tuple (digits_in_first_number, digits_in_second_number)
+    """
+    if problem_type is None:
+        return None
+
+    text = problem_type.strip().lower().replace("*", "x")
+    match = re.fullmatch(r"([2-4])x([2-4])", text)
+    if not match:
+        raise argparse.ArgumentTypeError(
+            "problem type must look like 2x2, 3x2, 2x4, or 4x4"
+        )
+
+    return int(match.group(1)), int(match.group(2))
 
 
 def visual_rows(m, n):
@@ -116,7 +147,7 @@ def problem_tikz(a, b):
 
     # To get brickwork, shorter rows are centered under/over longer rows.
     # This naturally shifts them by roughly one square when row lengths differ.
-    boxes_x = grid_x + 2.18 + 0.04 * max(n - 2, 0)
+    boxes_x = grid_x + 2.55 + 0.05 * max(n - 2, 0)
     boxes_y = grid_y - 1.48
 
     lines = []
@@ -132,8 +163,8 @@ def problem_tikz(a, b):
     lines.append("")
 
     # Predictable wide rectangle for each problem.
-    lines.append(r"\path[use as bounding box] (-1.10,-4.25) rectangle (7.45,3.05);")
-    lines.append(r"\draw[ink, line width=0.25pt] (-1.10,-4.25) rectangle (7.45,3.05);")
+    lines.append(r"\path[use as bounding box] (-1.15,-4.25) rectangle (9.00,3.05);")
+    lines.append(r"\draw[ink, line width=0.25pt] (-1.15,-4.25) rectangle (9.00,3.05);")
     lines.append("")
 
     # mathString: its own upper band.
@@ -395,6 +426,16 @@ def main():
         help="Number of problems to generate, from 1 to 12.",
     )
     parser.add_argument(
+        "problem_type",
+        nargs="?",
+        type=parse_problem_type,
+        help=(
+            "Optional digit pattern such as 2x2, 3x2, 2x4, or 4x4. "
+            "For example, '2x4' means a 2-digit number times a 4-digit number. "
+            "If omitted, both numbers use random digit lengths from 2 to 4."
+        ),
+    )
+    parser.add_argument(
         "--seed",
         type=int,
         default=None,
@@ -436,7 +477,14 @@ def main():
     stem = next_output_stem(output_dir)
     tex_path = scratch_dir / f"{stem}.tex"
 
-    problems = [(random_number(), random_number()) for _ in range(args.count)]
+    if args.problem_type is None:
+        problems = [(random_number(), random_number()) for _ in range(args.count)]
+    else:
+        left_digits, right_digits = args.problem_type
+        problems = [
+            (random_number(digits=left_digits), random_number(digits=right_digits))
+            for _ in range(args.count)
+        ]
     tex_path.write_text(make_latex(problems), encoding="utf-8")
 
     print(f"Wrote LaTeX source: {tex_path}")
