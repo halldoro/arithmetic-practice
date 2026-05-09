@@ -892,6 +892,12 @@
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 8px;
       }
+      /* Shrink portrait worksheet so its bottom edge stays roughly aligned
+         with the Number-of-digits panel's bottom in the sidebar.
+         Landscape stays at its 0.75 zoom because it's already short. */
+      .page.portrait {
+        zoom: 0.4;
+      }
     }
 
     @page {
@@ -953,7 +959,7 @@
 </head>
 <body>
   <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle color theme">☾</button>
-  <span class="version-tag" aria-hidden="true">v25 SHA <span class="sha">__SHA__</span></span>
+  <span class="version-tag" aria-hidden="true">v26 SHA <span class="sha">__SHA__</span></span>
   <script>
     (function () {
       var sha = document.querySelector(".version-tag .sha");
@@ -1032,11 +1038,11 @@
         <div class="control-card size-card">
           <div class="size-card-header">
             <div>
-              <h2>Problem size</h2>
+              <h2>Number of digits</h2>
               <p id="problemTypeSummary">Range: up to 4×4 digits</p>
             </div>
 
-            <div class="mode-toggle" role="group" aria-label="Problem size mode">
+            <div class="mode-toggle" role="group" aria-label="Number of digits mode">
               <button id="rangeModeBtn" type="button" class="mode-button active">Range</button>
               <button id="fixedModeBtn" type="button" class="mode-button">Fixed</button>
             </div>
@@ -1053,7 +1059,7 @@
 
           <p class="picker-help">
             <strong>Range</strong> chooses all valid sizes up to the selected square.
-            <strong>Fixed</strong> chooses only one exact size. 1×1 is not used.
+            <strong>Fixed</strong> chooses only one exact size. For 1×1, use the Single digit tab.
           </p>
         </div>
       </aside>
@@ -1751,7 +1757,7 @@
 
           if (row === 1 && col === 1) {
             cell.classList.add("disabled");
-            cell.title = "1×1 is not used";
+            cell.title = "For 1×1, use the Single digit tab";
           } else {
             cell.addEventListener("mouseenter", () => updateDigitGridSelection(`${row}x${col}`));
             cell.addEventListener("click", () => setProblemType(`${row}x${col}`));
