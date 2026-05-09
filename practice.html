@@ -430,33 +430,36 @@
       const n = rightDigits.length;
       const ink = options.inkColor;
 
+      const svgW = 1200;
+      const svgH = 700;
       const svg = svgEl("svg", {
         class: "problem-svg",
-        viewBox: "0 0 1200 700",
+        viewBox: `0 0 ${svgW} ${svgH}`,
         preserveAspectRatio: "xMidYMid meet",
         role: "img",
         "aria-label": `${problem.left} times ${problem.right}`
       });
 
-      const titleGroup = svgEl("g", {}, svg);
-      addText(titleGroup, `${problem.left} × ${problem.right}`, 48, 70, {
+      addText(svg, `${problem.left} × ${problem.right}`, 48, 70, {
         fill: ink,
         "font-size": 42
       });
 
-      // The grid sits in the lower-left part of the problem box.
-      // Larger digit counts push it a little further down-left, leaving
-      // room for mathBoxes in the upper-right.
-      const gridX = 220 - Math.max(0, n - 3) * 18;
-      const gridY = 430 + Math.max(0, m - 3) * 16;
-      const gridGroup = svgEl("g", {
-        transform: `translate(${gridX} ${gridY})`
-      }, svg);
+      // ------------------------------------------------------------
+      // Geometry.  We calculate bounding boxes before placing anything.
+      // This is important: large 4x4 problems must not clip and the line
+      // grid must not be covered by the mathBoxes.
+      // ------------------------------------------------------------
 
       const sep = 74;
       const margin = 29;
       const labelOffset = 31;
       const rt = Math.SQRT1_2;
+
+      const uMin = -margin;
+      const uMax = (n - 1) * sep + margin;
+      const vMin = -margin;
+      const vMax = (m - 1) * sep + margin;
 
       function pt(u, v) {
         return {
@@ -465,10 +468,114 @@
         };
       }
 
-      const uMin = -margin;
-      const uMax = (n - 1) * sep + margin;
-      const vMin = -margin;
-      const vMax = (m - 1) * sep + margin;
+      function gridBBox() {
+        const points = [];
+
+        // line endpoints
+        for (let i = 0; i < m; i++) {
+          const v = i * sep;
+          points.push(pt(uMin, v), pt(uMax, v));
+        }
+
+        for (let j = 0; j < n; j++) {
+          const u = j * sep;
+          points.push(pt(u, vMin), pt(u, vMax));
+        }
+
+        // labels
+        for (let i = 0; i < m; i++) {
+          points.push(pt(uMin - labelOffset, i * sep));
+        }
+
+        for (let j = 0; j < n; j++) {
+          points.push(pt(j * sep, vMin - labelOffset));
+        }
+
+        const xs = points.map(p => p.x);
+        const ys = points.map(p => p.y);
+
+        const textPad = 44;
+        return {
+          minX: Math.min(...xs) - textPad,
+          maxX: Math.max(...xs) + textPad,
+          minY: Math.min(...ys) - textPad,
+          maxY: Math.max(...ys) + textPad
+        };
+      }
+
+      function boxBBox() {
+        const rows = visualRows(m, n);
+        const square = 81;
+        const gap = 13;
+        const squareStep = square + gap / 2;
+        const rowStep = square + gap;
+
+        const allX = [];
+        for (const row of rows) {
+          for (const [i, j] of row) allX.push(i + j);
+        }
+
+        const minX = Math.min(...allX);
+        const maxX = Math.max(...allX);
+        const width = (maxX - minX) * squareStep + 2 * square;
+        const height = (rows.length - 1) * rowStep + square;
+
+        return {
+          rows,
+          square,
+          gap,
+          squareStep,
+          rowStep,
+          minXIndex: minX,
+          maxXIndex: maxX,
+          width,
+          height
+        };
+      }
+
+      const gb = gridBBox();
+      const bb = boxBBox();
+
+      const outerPad = 50;
+      const titleBand = 100;
+      const gapBetween = 34;
+
+      // The box image is the writing area, so it gets priority.  It is scaled
+      // only when a 4x4-style case would otherwise clip vertically or horizontally.
+      const maxBoxW = svgW * 0.52;
+      const maxBoxH = svgH - titleBand - 2 * outerPad;
+      const boxScale = Math.min(1, maxBoxW / bb.width, maxBoxH / bb.height);
+
+      const scaledBoxW = bb.width * boxScale;
+      const scaledBoxH = bb.height * boxScale;
+
+      // Place mathBoxes safely in the upper-right/right side, but never beyond
+      // the problem boundary.
+      const boxesLeft = svgW - outerPad - scaledBoxW;
+      const boxesTop = titleBand + Math.max(0, (svgH - titleBand - scaledBoxH) * 0.22);
+      const boxesCx = boxesLeft + scaledBoxW / 2;
+      const boxesCy = boxesTop + scaledBoxH / 2;
+
+      // Fit the grid into the left side.  Its available right edge is the left
+      // edge of the boxes minus a gap.  This prevents overlap by construction.
+      const gridNaturalW = gb.maxX - gb.minX;
+      const gridNaturalH = gb.maxY - gb.minY;
+      const gridAvailW = Math.max(260, boxesLeft - gapBetween - outerPad);
+      const gridAvailH = svgH - titleBand - outerPad;
+      const gridScale = Math.min(1, gridAvailW / gridNaturalW, gridAvailH / gridNaturalH);
+
+      const scaledGridW = gridNaturalW * gridScale;
+      const scaledGridH = gridNaturalH * gridScale;
+
+      // Place the grid lower-left in its allowed region.
+      const gridLeft = outerPad;
+      const gridTop = titleBand + gridAvailH - scaledGridH - 12;
+      const gridTx = gridLeft - gb.minX * gridScale;
+      const gridTy = gridTop - gb.minY * gridScale;
+
+      const gridGroup = svgEl("g", {
+        transform: `translate(${gridTx} ${gridTy}) scale(${gridScale})`
+      }, svg);
 
       function drawLine(p1, p2) {
         svgEl("line", {
@@ -507,8 +614,7 @@
       }
 
       for (let i = 0; i < m; i++) {
-        const v = i * sep;
-        const p = pt(uMin - labelOffset, v);
+        const p = pt(uMin - labelOffset, i * sep);
         addText(gridGroup, leftDigits[i], p.x, p.y, {
           fill: ink,
           "font-size": 37,
@@ -517,8 +623,7 @@
       }
 
       for (let j = 0; j < n; j++) {
-        const u = j * sep;
-        const p = pt(u, vMin - labelOffset);
+        const p = pt(j * sep, vMin - labelOffset);
         addText(gridGroup, rightDigits[j], p.x, p.y, {
           fill: ink,
           "font-size": 37,
@@ -526,43 +631,37 @@
         });
       }
 
-      // The mathBoxes sit in the upper-right part of the problem box.
-      // For larger problems, move them further right and a little upward
-      // so they do not cover the line grid while preserving the same
-      // brick-lattice symmetry.
-      const boxesX = 760 + Math.max(0, n - 3) * 26 + Math.max(0, m - 3) * 16;
-      const boxesY = 235 - Math.max(0, m - 3) * 18;
       const boxesGroup = svgEl("g", {
-        transform: `translate(${boxesX} ${boxesY})`
+        transform: `translate(${boxesCx} ${boxesCy}) scale(${boxScale})`
       }, svg);
 
-      drawMathBoxes(boxesGroup, m, n, ink);
+      drawMathBoxes(boxesGroup, m, n, ink, bb);
 
       return svg;
     }
 
-    function drawMathBoxes(parent, m, n, ink) {
-      const rows = visualRows(m, n);
-
-      const square = 81;
-      const gap = 13;
-      const squareStep = square + gap / 2;
-      const rowStep = square + gap;
-
-      const allX = [];
-      for (const row of rows) {
-        for (const [i, j] of row) {
-          allX.push(i + j);
+    function drawMathBoxes(parent, m, n, ink, precomputed = null) {
+      const data = precomputed || (() => {
+        const rows = visualRows(m, n);
+        const square = 81;
+        const gap = 13;
+        const squareStep = square + gap / 2;
+        const rowStep = square + gap;
+        const allX = [];
+        for (const row of rows) {
+          for (const [i, j] of row) allX.push(i + j);
         }
-      }
+        const minXIndex = Math.min(...allX);
+        const maxXIndex = Math.max(...allX);
+        const width = (maxXIndex - minXIndex) * squareStep + 2 * square;
+        const height = (rows.length - 1) * rowStep + square;
+        return { rows, square, gap, squareStep, rowStep, minXIndex, maxXIndex, width, height };
+      })();
 
-      const minX = Math.min(...allX);
-      const maxX = Math.max(...allX);
-      const totalWidth = (maxX - minX) * squareStep + 2 * square;
-      const totalHeight = (rows.length - 1) * rowStep + square;
+      const { rows, square, squareStep, rowStep, minXIndex, maxXIndex, width, height } = data;
 
-      const offsetX = -totalWidth / 2;
-      const offsetY = -totalHeight / 2;
+      const offsetX = -width / 2;
+      const offsetY = -height / 2;
 
       function pieceAt(x, y) {
         svgEl("rect", {
@@ -588,15 +687,9 @@
       for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
         const y = offsetY + rowIndex * rowStep;
         for (const [i, j] of rows[rowIndex]) {
-          // Mirror the horizontal coordinate so the box image has the
-          // same left/right lean as the line-intersection grid.
-          //
-          // The grid's visible horizontal coordinate is proportional to i+j,
-          // but SVG's box anchors grow to the right. Using maxX - (i+j)
-          // keeps the brick rows snapped to the square grid while matching
-          // the orientation of the circle pattern.
-          const xIndex = maxX - (i + j);
-          const x = offsetX + (xIndex - minX) * squareStep;
+          // Mirror horizontally so the mathBoxes lean the same way as the grid.
+          const xIndex = maxXIndex - (i + j);
+          const x = offsetX + (xIndex - minXIndex) * squareStep;
           pieceAt(x, y);
         }
       }
