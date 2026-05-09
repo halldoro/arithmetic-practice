@@ -522,8 +522,12 @@
         });
       }
 
+      // Keep the mathBoxes visibly separate from the line grid.
+      // Larger problems need a little more rightward offset so the two
+      // drawings do not cover each other.
+      const boxesX = 645 + Math.max(0, n - 3) * 24 + Math.max(0, m - 3) * 18;
       const boxesGroup = svgEl("g", {
-        transform: "translate(590 280)"
+        transform: `translate(${boxesX} 280)`
       }, svg);
 
       drawMathBoxes(boxesGroup, m, n, ink);
@@ -534,8 +538,8 @@
     function drawMathBoxes(parent, m, n, ink) {
       const rows = visualRows(m, n);
 
-      const square = 48;
-      const gap = 8;
+      const square = 43;
+      const gap = 7;
       const squareStep = square + gap / 2;
       const rowStep = square + gap;
 
@@ -562,7 +566,7 @@
           height: square,
           fill: "white",
           stroke: ink,
-          "stroke-width": 3.2
+          "stroke-width": 2.8
         }, parent);
 
         svgEl("line", {
@@ -571,7 +575,7 @@
           x2: x + square,
           y2: y + square,
           stroke: ink,
-          "stroke-width": 3.2
+          "stroke-width": 2.8
         }, parent);
       }
 
