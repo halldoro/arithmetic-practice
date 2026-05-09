@@ -14,6 +14,13 @@ concurrency:
   group: pages
   cancel-in-progress: false
 
+# Force JavaScript actions onto Node.js 24 instead of the deprecated Node.js 20.
+# Without this, GitHub will start running Node 20 actions on Node 24 by default
+# in mid-2026 anyway, but we opt in explicitly so the workflow keeps passing
+# (and the deprecation noise stays out of the logs) regardless.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   deploy:
     environment:
