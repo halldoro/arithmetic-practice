@@ -505,8 +505,8 @@
 
       function boxBBox() {
         const rows = visualRows(m, n);
-        const square = 97;
-        const gap = 16;
+        const square = 66;
+        const gap = 8;
         const squareStep = square + gap / 2;
         const rowStep = square + gap;
 
@@ -538,40 +538,63 @@
 
       const outerPad = 50;
       const titleBand = 100;
-      const gapBetween = 34;
+      const gapBetween = 42;
 
-      // The box image is the writing area, so it gets priority.  It is scaled
-      // only when a 4x4-style case would otherwise clip vertically or horizontally.
-      const maxBoxW = svgW * 0.62;
-      const maxBoxH = svgH - titleBand - 2 * outerPad;
-      const boxScale = Math.min(1, maxBoxW / bb.width, maxBoxH / bb.height);
+      const contentLeft = outerPad;
+      const contentTop = titleBand;
+      const contentW = svgW - 2 * outerPad;
+      const contentH = svgH - titleBand - outerPad;
 
-      const scaledBoxW = bb.width * boxScale;
-      const scaledBoxH = bb.height * boxScale;
-
-      // Place mathBoxes high on the right side, using the known bounding box.
-      // The top edge is fixed near the title band; the right edge is kept
-      // inside the problem boundary. This uses the available upper space and
-      // prevents clipping even for 4x4 problems.
-      const boxesLeft = svgW - outerPad - scaledBoxW;
-      const boxesTop = titleBand + 18;
-      const boxesCx = boxesLeft + scaledBoxW / 2;
-      const boxesCy = boxesTop + scaledBoxH / 2;
-
-      // Fit the grid into the left side.  Its available right edge is the left
-      // edge of the boxes minus a gap.  This prevents overlap by construction.
       const gridNaturalW = gb.maxX - gb.minX;
       const gridNaturalH = gb.maxY - gb.minY;
-      const gridAvailW = Math.max(260, boxesLeft - gapBetween - outerPad);
-      const gridAvailH = svgH - titleBand - outerPad;
-      const gridScale = Math.min(1, gridAvailW / gridNaturalW, gridAvailH / gridNaturalH);
+
+      // Keep the grid size stable. Only shrink it if the problem is unusually
+      // large for the available SVG area.
+      const gridScale = Math.min(1, contentW * 0.46 / gridNaturalW, contentH * 0.88 / gridNaturalH);
+      const boxScale = 1; // fixed square size for every generated problem
 
       const scaledGridW = gridNaturalW * gridScale;
       const scaledGridH = gridNaturalH * gridScale;
+      const scaledBoxW = bb.width;
+      const scaledBoxH = bb.height;
 
-      // Place the grid lower-left in its allowed region.
-      const gridLeft = outerPad;
-      const gridTop = titleBand + gridAvailH - scaledGridH - 4;
+      let gridLeft;
+      let gridTop;
+      let boxesLeft;
+      let boxesTop;
+
+      const groupW = scaledGridW + gapBetween + scaledBoxW;
+      const fitsSideBySide = groupW <= contentW && Math.max(scaledGridH, scaledBoxH) <= contentH;
+
+      if (fitsSideBySide) {
+        // When there is room, keep the two figures near each other as a pair.
+        // This avoids the large empty gap seen in small 2x2 problems.
+        const groupLeft = contentLeft + (contentW - groupW) / 2;
+        gridLeft = groupLeft;
+        boxesLeft = groupLeft + scaledGridW + gapBetween;
+
+        // The grid sits slightly lower; the writing boxes sit slightly higher.
+        gridTop = contentTop + (contentH - scaledGridH) * 0.62;
+        boxesTop = contentTop + (contentH - scaledBoxH) * 0.34;
+      } else {
+        // If space is tight, pull them toward opposite corners while preserving
+        // a gap between their computed bounding boxes.
+        gridLeft = contentLeft;
+        gridTop = contentTop + contentH - scaledGridH;
+
+        boxesLeft = contentLeft + contentW - scaledBoxW;
+        boxesTop = contentTop;
+      }
+
+      // Clamp both figures inside the problem box.
+      gridLeft = Math.max(contentLeft, Math.min(gridLeft, contentLeft + contentW - scaledGridW));
+      gridTop = Math.max(contentTop, Math.min(gridTop, contentTop + contentH - scaledGridH));
+      boxesLeft = Math.max(contentLeft, Math.min(boxesLeft, contentLeft + contentW - scaledBoxW));
+      boxesTop = Math.max(contentTop, Math.min(boxesTop, contentTop + contentH - scaledBoxH));
+
+      const boxesCx = boxesLeft + scaledBoxW / 2;
+      const boxesCy = boxesTop + scaledBoxH / 2;
+
       const gridTx = gridLeft - gb.minX * gridScale;
       const gridTy = gridTop - gb.minY * gridScale;
 
@@ -645,8 +668,8 @@
     function drawMathBoxes(parent, m, n, ink, precomputed = null) {
       const data = precomputed || (() => {
         const rows = visualRows(m, n);
-        const square = 97;
-        const gap = 16;
+        const square = 66;
+        const gap = 8;
         const squareStep = square + gap / 2;
         const rowStep = square + gap;
         const allX = [];
@@ -673,7 +696,7 @@
           height: square,
           fill: "white",
           stroke: ink,
-          "stroke-width": 5.6
+          "stroke-width": 3.8
         }, parent);
 
         svgEl("line", {
@@ -682,7 +705,7 @@
           x2: x + square,
           y2: y + square,
           stroke: ink,
-          "stroke-width": 5.6
+          "stroke-width": 3.8
         }, parent);
       }
 
