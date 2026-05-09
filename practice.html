@@ -162,9 +162,11 @@
 
     .controls-layout {
       display: grid;
-      grid-template-columns: minmax(230px, 0.8fr) minmax(420px, 1.35fr) minmax(260px, 0.95fr);
+      grid-template-columns: minmax(170px, 0.7fr) minmax(310px, 1fr) minmax(200px, 0.85fr);
       gap: 14px;
       align-items: stretch;
+      max-width: 860px;
+      margin: 0 auto;
     }
 
     .control-card {
@@ -402,6 +404,15 @@
       height: 210mm;
     }
 
+    /* On screen the worksheet is shrunk so the whole sheet fits on a normal
+       monitor without scrolling. Print CSS overrides this back to A4. */
+    @media screen {
+      .page.portrait,
+      .page.landscape {
+        zoom: 0.6;
+      }
+    }
+
     .problem-cell {
       border: 0.22mm solid var(--ink);
       overflow: hidden;
@@ -497,7 +508,7 @@
   </style>
 </head>
 <body>
-  <span class="version-tag" aria-hidden="true">v3 SHA <span class="sha">__SHA__</span></span>
+  <span class="version-tag" aria-hidden="true">v4 SHA <span class="sha">__SHA__</span></span>
   <script>
     (function () {
       var sha = document.querySelector(".version-tag .sha");
