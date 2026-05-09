@@ -430,7 +430,8 @@
       display: block;
     }
 
-    .hidden {
+    .hidden,
+    [hidden] {
       display: none !important;
     }
 
@@ -508,7 +509,7 @@
   </style>
 </head>
 <body>
-  <span class="version-tag" aria-hidden="true">v4 SHA <span class="sha">__SHA__</span></span>
+  <span class="version-tag" aria-hidden="true">v5 SHA <span class="sha">__SHA__</span></span>
   <script>
     (function () {
       var sha = document.querySelector(".version-tag .sha");
