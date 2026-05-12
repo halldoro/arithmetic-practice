@@ -2501,7 +2501,26 @@
     createProblemSet();
     });
 
-    document.getElementById("printBtn").addEventListener("click", () => window.print());
+    // Browsers honour @page { size: ... } at print time, but the rule has
+    // to match the orientation of the currently-displayed worksheet — a
+    // landscape .page on a hardcoded-portrait @page gets cropped, which
+    // is what made the 12-problem set fill only the top half. Inject the
+    // right @page rule into a fixed style element before each print.
+    function applyPrintOrientation(orientation) {
+      let style = document.getElementById("dynamic-page-style");
+      if (!style) {
+        style = document.createElement("style");
+        style.id = "dynamic-page-style";
+        document.head.appendChild(style);
+      }
+      style.textContent = `@page { size: A4 ${orientation}; margin: 5mm; }`;
+    }
+
+    document.getElementById("printBtn").addEventListener("click", () => {
+      const count = Number(document.getElementById("problemCount").value);
+      applyPrintOrientation(pageLayout(count).orientation);
+      window.print();
+    });
 
     // Click the current-seed badge to copy its value to the clipboard.
     // Class toggle + force-reflow re-triggers the CSS fade animation on
@@ -2601,7 +2620,11 @@
       createDivisionProblemSet();
     });
 
-    document.getElementById("divisionPrintBtn").addEventListener("click", () => window.print());
+    document.getElementById("divisionPrintBtn").addEventListener("click", () => {
+      const count = Number(document.getElementById("divisionProblemCount").value);
+      applyPrintOrientation(pageLayout(count).orientation);
+      window.print();
+    });
 
     document.getElementById("divisionCurrentSeed").addEventListener("click", async () => {
       const btn = document.getElementById("divisionCurrentSeed");
