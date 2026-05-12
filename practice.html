@@ -1984,21 +1984,263 @@
       return svg;
     }
 
-    // Phase 2 placeholder: render one hard-coded problem into the
-    // Division view. Phase 3 wires this into the exerciseTypes
-    // pipeline with sidebar controls.
-    function renderHardCodedDivisionExample() {
+    // ------------------------------------------------------------
+    // Division pipeline. Parallels the multiplication pipeline:
+    // sidebar inputs (prefixed `division*`) → readDivisionOptions
+    // → makeDivisionProblems → renderLongDivision → divisionPage.
+    // Shares the generic helpers (mulberry32, resolveSeedText,
+    // pageLayout, randomInt, randomNumber) with multiplication.
+    // ------------------------------------------------------------
+
+    let divisionRandomSalt = Math.floor(Math.random() * 0xffffffff);
+    let divisionRegenerateTimer = null;
+
+    function isDivisionSeeded() {
+      return document.getElementById("divisionSeed").value.trim().length > 0;
+    }
+
+    function readDivisionOptions() {
+      return {
+        count: Number(document.getElementById("divisionProblemCount").value),
+        problemType: document.getElementById("divisionProblemType").value,
+        problemMode: document.getElementById("divisionProblemMode").value,
+        inkColor: document.getElementById("divisionInkColor").value,
+        includeAnswer: document.getElementById("divisionIncludeAnswer").checked,
+        allowRemainder: document.getElementById("allowRemainder").checked,
+        seedText: document.getElementById("divisionSeed").value.trim()
+      };
+    }
+
+    function updateDivisionNewSetButton() {
+      const btn = document.getElementById("divisionNewSetBtn");
+      btn.disabled = isDivisionSeeded();
+      btn.title = isDivisionSeeded()
+        ? "Clear the seed to generate a new random set."
+        : "Generate a new random worksheet with the current options.";
+    }
+
+    function chooseDivisionDigits(rand, problemType, problemMode) {
+      const match = problemType.match(/^([2-5])x([1-3])$/);
+      const selectedDividend = match ? Number(match[1]) : 4;
+      const selectedDivisor  = match ? Number(match[2]) : 2;
+
+      if (problemMode === "fixed") {
+        return [selectedDividend, selectedDivisor];
+      }
+
+      // Range: pick any valid (dividend, divisor) where divisor < dividend.
+      let dividendDigits;
+      let divisorDigits;
+      do {
+        dividendDigits = randomInt(rand, 2, selectedDividend);
+        divisorDigits = randomInt(rand, 1, selectedDivisor);
+      } while (divisorDigits >= dividendDigits);
+
+      return [dividendDigits, divisorDigits];
+    }
+
+    function makeDivisionProblems(options, rand) {
+      const problems = [];
+      for (let i = 0; i < options.count; i++) {
+        const [dividendDigits, divisorDigits] =
+          chooseDivisionDigits(rand, options.problemType, options.problemMode);
+
+        // Reject loop: keep trying until we land on a problem with the
+        // right shape (and exact divisibility when allowRemainder is off).
+        let attempts = 0;
+        let stepsObj = null;
+        while (attempts++ < 200) {
+          const divisorStr = randomNumber(rand, divisorDigits);
+          const divisorNum = Number(divisorStr);
+          if (divisorNum === 0) continue;
+
+          let dividendStr;
+          if (options.allowRemainder) {
+            dividendStr = randomNumber(rand, dividendDigits);
+          } else {
+            const minDividend = Math.pow(10, dividendDigits - 1);
+            const maxDividend = Math.pow(10, dividendDigits) - 1;
+            const minK = Math.max(1, Math.ceil(minDividend / divisorNum));
+            const maxK = Math.floor(maxDividend / divisorNum);
+            if (maxK < minK) continue;
+            const k = randomInt(rand, minK, maxK);
+            dividendStr = String(divisorNum * k);
+          }
+
+          if (dividendStr.length !== dividendDigits) continue;
+          const candidate = divideSteps(dividendStr, divisorStr);
+          if (candidate.steps.length === 0) continue;
+          stepsObj = candidate;
+          break;
+        }
+
+        // Fallback if we somehow failed to generate one — pick a known-good
+        // problem so the worksheet always renders.
+        if (!stepsObj) stepsObj = divideSteps("5040", "12");
+        problems.push(stepsObj);
+      }
+      return problems;
+    }
+
+    function createDivisionProblemSet() {
+      const options = readDivisionOptions();
+      updateDivisionNewSetButton();
       const page = document.getElementById("divisionPage");
-      if (!page) return;
+      const layout = pageLayout(options.count);
+
+      page.className = `page ${layout.orientation}`;
+      page.style.gridTemplateColumns = `repeat(${layout.cols}, 1fr)`;
+      page.style.gridTemplateRows = `repeat(${layout.rows}, 1fr)`;
       page.innerHTML = "";
-      page.style.gridTemplateColumns = "1fr";
-      page.style.gridTemplateRows = "1fr";
-      const cell = document.createElement("div");
-      cell.className = "problem-cell";
-      const stepsObj = divideSteps("5040", "12");
-      const ink = document.getElementById("inkColor").value;
-      cell.appendChild(renderLongDivision(stepsObj, { inkColor: ink, includeAnswer: false }));
-      page.appendChild(cell);
+
+      const seed = resolveSeedText(options.seedText) ?? divisionRandomSalt;
+      const seedDisplay = document.getElementById("divisionCurrentSeed");
+      if (seedDisplay) seedDisplay.textContent = String(seed);
+
+      const rand = mulberry32(seed);
+      const problems = makeDivisionProblems(options, rand);
+
+      let lastVisibleCell = null;
+      for (let i = 0; i < layout.rows * layout.cols; i++) {
+        const cell = document.createElement("div");
+        cell.className = "problem-cell";
+        page.appendChild(cell);
+        if (i < problems.length) {
+          cell.appendChild(renderLongDivision(problems[i], options));
+          lastVisibleCell = cell;
+        } else {
+          cell.classList.add("hidden");
+        }
+      }
+
+      if (lastVisibleCell) {
+        const seedLabel = document.createElement("div");
+        seedLabel.className = "page-seed-label";
+        seedLabel.textContent = `seed: ${seed}`;
+        seedLabel.style.color = options.inkColor;
+        lastVisibleCell.appendChild(seedLabel);
+      }
+    }
+
+    function scheduleDivisionRegeneration() {
+      window.clearTimeout(divisionRegenerateTimer);
+      divisionRegenerateTimer = window.setTimeout(createDivisionProblemSet, 180);
+    }
+
+    // --- Division digit-grid + count-grid builders ---
+
+    function setDivisionProblemMode(mode, { regenerate = true } = {}) {
+      document.getElementById("divisionProblemMode").value = mode;
+      document.getElementById("divisionRangeModeBtn").classList.toggle("active", mode === "range");
+      document.getElementById("divisionFixedModeBtn").classList.toggle("active", mode === "fixed");
+      updateDivisionDigitGridSelection();
+      if (regenerate) {
+        if (!isDivisionSeeded()) divisionRandomSalt = Math.floor(Math.random() * 0xffffffff);
+        createDivisionProblemSet();
+      }
+    }
+
+    function setDivisionProblemType(value, { regenerate = true } = {}) {
+      document.getElementById("divisionProblemType").value = value;
+      updateDivisionDigitGridSelection();
+      if (regenerate) {
+        if (!isDivisionSeeded()) divisionRandomSalt = Math.floor(Math.random() * 0xffffffff);
+        createDivisionProblemSet();
+      }
+    }
+
+    function activeDivisionProblemTypeValues(value, mode) {
+      const [dividend, divisor] = value.split("x").map(Number);
+      const values = new Set();
+      if (mode === "fixed") {
+        values.add(`${dividend}x${divisor}`);
+        return values;
+      }
+      for (let r = 2; r <= dividend; r++) {
+        for (let c = 1; c <= divisor; c++) {
+          if (c < r) values.add(`${r}x${c}`);
+        }
+      }
+      return values;
+    }
+
+    function divisionProblemTypeLabel(value, mode) {
+      const [dividend, divisor] = value.split("x");
+      if (mode === "fixed") return `Fixed: ${dividend}-digit ÷ ${divisor}-digit`;
+      return `Range: up to ${dividend}-digit ÷ ${divisor}-digit`;
+    }
+
+    function updateDivisionDigitGridSelection(previewValue = null) {
+      const value = document.getElementById("divisionProblemType").value;
+      const mode = document.getElementById("divisionProblemMode").value;
+      const active = activeDivisionProblemTypeValues(previewValue || value, mode);
+      for (const cell of document.querySelectorAll("#divisionDigitGrid .digit-cell")) {
+        cell.classList.remove("selected", "preview");
+        const cellValue = cell.dataset.value;
+        if (!cellValue || !active.has(cellValue)) continue;
+        cell.classList.add(previewValue ? "preview" : "selected");
+      }
+      document.getElementById("divisionProblemTypeSummary").textContent =
+        divisionProblemTypeLabel(previewValue || value, mode);
+    }
+
+    function buildDivisionDigitGrid() {
+      const grid = document.getElementById("divisionDigitGrid");
+      grid.innerHTML = "";
+      grid.style.gridTemplateColumns = "repeat(3, 46px)";
+      grid.style.gridTemplateRows = "repeat(4, 46px)";
+      for (let row = 2; row <= 5; row++) {
+        for (let col = 1; col <= 3; col++) {
+          const cell = document.createElement("div");
+          cell.className = "digit-cell";
+          cell.dataset.value = `${row}x${col}`;
+          cell.textContent = `${row}×${col}`;
+          if (col >= row) {
+            cell.classList.add("disabled");
+            cell.title = "Divisor must have fewer digits than dividend";
+          } else {
+            cell.addEventListener("mouseenter", () => updateDivisionDigitGridSelection(`${row}x${col}`));
+            cell.addEventListener("click", () => setDivisionProblemType(`${row}x${col}`));
+          }
+          grid.appendChild(cell);
+        }
+      }
+      grid.addEventListener("mouseleave", () => updateDivisionDigitGridSelection());
+      updateDivisionDigitGridSelection();
+    }
+
+    function setDivisionProblemCount(count, { regenerate = true } = {}) {
+      document.getElementById("divisionProblemCount").value = String(count);
+      for (const btn of document.querySelectorAll("#divisionProblemCountGrid .count-button")) {
+        btn.classList.toggle("active", Number(btn.dataset.count) === count);
+      }
+      if (regenerate) {
+        if (!isDivisionSeeded()) divisionRandomSalt = Math.floor(Math.random() * 0xffffffff);
+        createDivisionProblemSet();
+      }
+    }
+
+    function buildDivisionProblemCountGrid() {
+      const grid = document.getElementById("divisionProblemCountGrid");
+      grid.innerHTML = "";
+      for (let count = 1; count <= 12; count++) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "count-button";
+        btn.dataset.count = String(count);
+        btn.textContent = String(count);
+        btn.title = `${count} problem${count === 1 ? "" : "s"}`;
+        btn.addEventListener("click", () => setDivisionProblemCount(count));
+        grid.appendChild(btn);
+      }
+      setDivisionProblemCount(Number(document.getElementById("divisionProblemCount").value), { regenerate: false });
+    }
+
+    function initializeDivisionPicker() {
+      buildDivisionDigitGrid();
+      document.getElementById("divisionRangeModeBtn").addEventListener("click", () => setDivisionProblemMode("range"));
+      document.getElementById("divisionFixedModeBtn").addEventListener("click", () => setDivisionProblemMode("fixed"));
+      updateDivisionDigitGridSelection();
     }
 
     const exerciseTypes = {
@@ -2341,10 +2583,38 @@
       tab.addEventListener("click", () => setActiveTopicTab(tab));
     });
 
+    document.getElementById("divisionInkColor").addEventListener("change", createDivisionProblemSet);
+    document.getElementById("divisionIncludeAnswer").addEventListener("change", createDivisionProblemSet);
+    document.getElementById("allowRemainder").addEventListener("change", createDivisionProblemSet);
+    document.getElementById("divisionSeed").addEventListener("input", scheduleDivisionRegeneration);
+
+    document.getElementById("divisionNewSetBtn").addEventListener("click", () => {
+      if (isDivisionSeeded()) return;
+      divisionRandomSalt = Math.floor(Math.random() * 0xffffffff);
+      createDivisionProblemSet();
+    });
+
+    document.getElementById("divisionPrintBtn").addEventListener("click", () => window.print());
+
+    document.getElementById("divisionCurrentSeed").addEventListener("click", async () => {
+      const btn = document.getElementById("divisionCurrentSeed");
+      const value = btn.textContent;
+      if (!value) return;
+      try {
+        await navigator.clipboard.writeText(value);
+        btn.classList.add("copied");
+        setTimeout(() => btn.classList.remove("copied"), 1200);
+      } catch (e) {
+        /* clipboard not available — ignore */
+      }
+    });
+
     buildProblemCountGrid();
     initializeProblemTypePicker();
     createProblemSet();
-    renderHardCodedDivisionExample();
+    buildDivisionProblemCountGrid();
+    initializeDivisionPicker();
+    createDivisionProblemSet();
   </script>
 </body>
 </html>
