@@ -981,12 +981,12 @@
       <button class="exercise-tab active" type="button" role="tab" aria-selected="true" data-topic="multiplication">
         Multiplication
       </button>
-      <button class="exercise-tab disabled" type="button" role="tab" aria-selected="false" disabled>
+      <button class="exercise-tab" type="button" role="tab" aria-selected="false" data-topic="division" data-view="longDivision">
         Division
       </button>
     </div>
 
-    <div class="sub-tabs" role="tablist" aria-label="Multiplication type">
+    <div class="sub-tabs" data-topic="multiplication" role="tablist" aria-label="Multiplication type">
       <button class="sub-tab active" type="button" role="tab" aria-selected="true" data-exercise="multiplicationTables">
         Single digit
       </button>
@@ -1092,6 +1092,25 @@
 
         <section class="worksheet-wrap">
           <div id="page" class="page portrait" aria-label="Printable worksheet"></div>
+        </section>
+      </div>
+    </div>
+
+    <div class="line-mult-layout" data-view="longDivision" hidden>
+      <aside class="line-sidebar" aria-label="Worksheet controls">
+        <div class="control-card">
+          <h2>Long division</h2>
+          <p class="picker-help">
+            Sidebar controls (number of problems, digit counts, seed, ink color,
+            <strong>Allow remainder</strong>, <strong>Include answer</strong>,
+            <strong>Print</strong>) arrive in Phase 3. See
+            <code>doc/001 - Division Tab.md</code>.
+          </p>
+        </div>
+      </aside>
+      <div class="line-right-col">
+        <section class="worksheet-wrap">
+          <div id="divisionPage" class="page portrait" aria-label="Printable worksheet"></div>
         </section>
       </div>
     </div>
@@ -1867,8 +1886,43 @@
       });
     }
 
+    // Top-tab click routing. Multiplication owns a sub-tab strip and defers
+    // view selection to whichever sub-tab is active. Division has no sub-tabs,
+    // so its top tab carries data-view and switches the view directly.
+    function setActiveTopicTab(topTab) {
+      if (!topTab || topTab.classList.contains("disabled") || topTab.disabled) return;
+      const topic = topTab.dataset.topic;
+
+      document.querySelectorAll(".exercise-tab[data-topic]").forEach(t => {
+        const isActive = t === topTab;
+        t.classList.toggle("active", isActive);
+        t.setAttribute("aria-selected", isActive ? "true" : "false");
+      });
+
+      let activeStrip = null;
+      document.querySelectorAll(".sub-tabs[data-topic]").forEach(strip => {
+        const ours = strip.dataset.topic === topic;
+        strip.hidden = !ours;
+        if (ours) activeStrip = strip;
+      });
+
+      if (activeStrip) {
+        const sub = activeStrip.querySelector(".sub-tab.active") || activeStrip.querySelector(".sub-tab");
+        setActiveExerciseTab(sub);
+      } else {
+        const targetView = topTab.dataset.view;
+        document.querySelectorAll("[data-view]").forEach(v => {
+          v.hidden = v.dataset.view !== targetView;
+        });
+      }
+    }
+
     document.querySelectorAll(".sub-tab[data-exercise]").forEach(tab => {
       tab.addEventListener("click", () => setActiveExerciseTab(tab));
+    });
+
+    document.querySelectorAll(".exercise-tab[data-topic]").forEach(tab => {
+      tab.addEventListener("click", () => setActiveTopicTab(tab));
     });
 
     buildProblemCountGrid();
