@@ -110,11 +110,25 @@ A separate, unit-testable `divideSteps(dividend, divisor)` produces this object.
 
 ## Sidebar controls
 
-Reuse the existing layout. New for division:
+Mirror the Multi digit Multiplication sidebar one-for-one — same two-column shape, same cards, same hidden-input pattern, same regeneration behaviour. Reuse the existing CSS classes (`line-sidebar`, `line-right-col`, `control-card`, `compact-card`, `mode-toggle`, `switch`, etc.) and the existing JS plumbing (`mulberry32`, `resolveSeedText`, `scheduleRegeneration`, the `exerciseTypes` dispatch).
 
-- **Allow remainder** toggle: when off, the generator only emits `dividend = divisor × q` so results are exact. Default off — kids learning long division usually start with exact problems.
+**Left sidebar.** Two stacked cards, in this order:
 
-Repurpose `digitCountGrid` for picking `dividend × divisor` digit counts (e.g. up to 5×3). Range mode behaves the same way as multiplication.
+- **Number of problems** — unchanged from multiplication. Hidden `#problemCount`, a 4×3 `#problemCountGrid` of buttons numbered 1–12. Clicking a number regenerates the worksheet immediately.
+- **Number of digits** — same shape as the multiplication size card, with three differences:
+  - `#digitGrid` is repurposed as a 4-row × 3-column grid. **Rows** = dividend digit count (2 through 5). **Columns** = divisor digit count (1 through 3). Axis labels become "digits in dividend" and "digits in divisor".
+  - Cells where the divisor has as many or more digits than the dividend (`2×2`, `3×3`, etc.) are disabled — same convention as `1×1` being disabled in multiplication, since those produce quotients of 0 or 1 and aren't useful for long-division practice. Default selection: `4×2`.
+  - A new **Allow remainder** switch row sits at the bottom of the card, below the Range/Fixed helper text. Off by default. When off, the generator only emits `dividend = divisor × q` so every problem divides evenly. It lives in the size card (not in Answers) because it constrains *which problems get generated*, not how answers display.
+
+  The header keeps the live summary line (`#problemTypeSummary`, e.g. `Range: up to 4×2 digits`) and the Range/Fixed `mode-toggle`. Hidden inputs `#problemType` (e.g. `4x2`) and `#problemMode` (`range` | `fixed`) match the multiplication tab.
+
+**Right column.** Same three compact cards in a row above the worksheet preview, in this order:
+
+- **Randomness** — `#seed` text input (`inputmode="numeric"`, placeholder `blank = random`), current-seed badge `#currentSeed` (click to copy), and a `New set` button that is disabled while a seed is set. Identical to multiplication.
+- **Answers** — single `#includeAnswer` switch. When on, fill in every empty box per the `divideSteps` data (quotient digits, each `q_k × divisor` subtraction row, partial remainders, final remainder).
+- **Print style** — `#inkColor` select with the same four colour options (blue, black, green, red-brown) and a `Print` button. Same print-CSS hiding rules so only the worksheet area prints.
+
+**Regeneration triggers.** Every input change regenerates the worksheet: count-grid click, mode toggle, digit-grid cell click, **Allow remainder** toggle, ink colour, **Include answer**, and seed input (via the existing debounced `scheduleRegeneration`). The seed-stamp in the worksheet's lower-right corner carries over as-is.
 
 ## Rendering challenges, in order of risk
 
