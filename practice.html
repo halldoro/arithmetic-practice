@@ -1116,13 +1116,237 @@
     </div>
   </main>
 
-  <script type="module">
+  <script>
     "use strict";
 
-    import { divideSteps } from "./divide_steps.mjs";
-    import { longDivisionLayout } from "./long_division_layout.mjs";
-
     const SVG_NS = "http://www.w3.org/2000/svg";
+
+    // ------------------------------------------------------------
+    // Long-division calculator. Pure logic, no rendering.
+    // See doc/001 - Division Tab.md for the data-model contract.
+    //
+    // Kept in sync with the sidecar test copy at divide_steps.mjs
+    // (which is loaded by `make test`). Edit here first; mirror
+    // verbatim to the .mjs file when changing the function body —
+    // same convention as tools/gen_brick_pattern.mjs.
+    // ------------------------------------------------------------
+    function divideSteps(dividend, divisor) {
+      const dividendStr = String(dividend);
+      const divisorStr = String(divisor);
+
+      if (!/^\d+$/.test(dividendStr)) {
+        throw new Error(`divideSteps: dividend must be a non-negative integer, got ${JSON.stringify(dividend)}`);
+      }
+      if (!/^\d+$/.test(divisorStr)) {
+        throw new Error(`divideSteps: divisor must be a non-negative integer, got ${JSON.stringify(divisor)}`);
+      }
+      const divisorBig = BigInt(divisorStr);
+      if (divisorBig === 0n) {
+        throw new Error("divideSteps: divisor must be non-zero");
+      }
+
+      const steps = [];
+      let running = 0n;
+      let i = 0;
+
+      while (i < dividendStr.length && running < divisorBig) {
+        running = running * 10n + BigInt(dividendStr[i]);
+        i++;
+      }
+
+      if (running < divisorBig) {
+        return {
+          dividend: dividendStr,
+          divisor: divisorStr,
+          steps: [],
+          quotient: "0",
+          remainder: dividendStr
+        };
+      }
+
+      let quotient = "";
+      while (true) {
+        const take = String(running);
+        const qBig = running / divisorBig;
+        const q = Number(qBig);
+        const subBig = qBig * divisorBig;
+        const remainderBig = running - subBig;
+        steps.push({
+          column: i - 1,
+          take,
+          q,
+          sub: String(subBig),
+          remainder: String(remainderBig)
+        });
+        quotient += String(q);
+
+        if (i >= dividendStr.length) {
+          return {
+            dividend: dividendStr,
+            divisor: divisorStr,
+            steps,
+            quotient,
+            remainder: String(remainderBig)
+          };
+        }
+
+        running = remainderBig * 10n + BigInt(dividendStr[i]);
+        i++;
+      }
+    }
+
+    // ------------------------------------------------------------
+    // Long-division SVG layout calculator. Pure function from a
+    // divideSteps result + optional geometry to positioned drawing
+    // primitives. Kept in sync with long_division_layout.mjs (test
+    // sidecar). Edit here first; mirror verbatim to the .mjs.
+    // ------------------------------------------------------------
+    function longDivisionLayout(stepsObj, opts = {}) {
+      const square        = opts.square        ?? 60;
+      const colStep       = opts.colStep       ?? 70;
+      const rowStep       = opts.rowStep       ?? 70;
+      const dividerHeight = opts.dividerHeight ?? 8;
+      const bracketStroke = opts.bracketStroke ?? 4;
+      const bracketGap    = opts.bracketGap    ?? 6;
+      const divisorPad    = opts.divisorPad    ?? 24;
+      const margin        = opts.margin        ?? 24;
+      const digitFontSize = opts.digitFontSize ?? 44;
+
+      const { dividend, divisor, steps, remainder } = stepsObj;
+      const N = dividend.length;
+      const K = steps.length;
+
+      const divisorDigitWidth = digitFontSize * 0.6;
+      const divisorWidth = divisor.length * divisorDigitWidth;
+      const bracketX = margin + divisorWidth + divisorPad;
+      const xColStart = bracketX + bracketStroke + colStep / 2;
+
+      const colCenter = c => xColStart + c * colStep;
+      const colLeft   = c => colCenter(c) - square / 2;
+      const colRight  = c => colCenter(c) + square / 2;
+
+      function boxRow(rightCol, length, yTop, digits) {
+        const boxes = [];
+        for (let i = 0; i < length; i++) {
+          const col = rightCol - length + 1 + i;
+          boxes.push({
+            col,
+            x: colLeft(col),
+            y: yTop,
+            size: square,
+            digit: digits ? digits[i] : null
+          });
+        }
+        return boxes;
+      }
+
+      let y = margin;
+
+      const quotientRowYTop = y;
+      const quotientRowYCenter = y + square / 2;
+      y += square;
+
+      y += bracketGap;
+      const bracketTopY = y;
+      y += bracketStroke + bracketGap;
+
+      const dividendYTop = y;
+      const dividendYCenter = y + square / 2;
+      y += square;
+
+      const stepRowGap = Math.max(0, rowStep - square);
+
+      const stepRows = [];
+      for (let k = 0; k < K; k++) {
+        y += stepRowGap;
+        const subYTop = y;
+        const subYCenter = y + square / 2;
+        y += square;
+
+        y += stepRowGap / 2;
+        const dividerY = y + dividerHeight / 2;
+        y += dividerHeight + stepRowGap / 2;
+
+        const postYTop = y;
+        const postYCenter = y + square / 2;
+        y += square;
+
+        const step = steps[k];
+        const isLast = (k === K - 1);
+
+        const subBoxes = boxRow(step.column, step.sub.length, subYTop, step.sub);
+        const subLeftEdge = colLeft(step.column - step.sub.length + 1);
+        const subRightEdge = colRight(step.column);
+
+        const postRightCol = isLast ? step.column          : steps[k + 1].column;
+        const postContent  = isLast ? remainder            : steps[k + 1].take;
+        const postBoxes = boxRow(postRightCol, postContent.length, postYTop, postContent);
+
+        stepRows.push({
+          kind: isLast ? "final" : "intermediate",
+          step,
+          subRow: {
+            yTop: subYTop,
+            yCenter: subYCenter,
+            boxes: subBoxes,
+            sign: { text: "−", x: subLeftEdge - 18, y: subYCenter }
+          },
+          divider: {
+            y: dividerY,
+            x1: subLeftEdge,
+            x2: subRightEdge
+          },
+          postRow: {
+            yTop: postYTop,
+            yCenter: postYCenter,
+            boxes: postBoxes
+          }
+        });
+      }
+
+      const bracketBottomY = y;
+      const height = y + margin;
+      const width = colRight(N - 1) + margin;
+
+      const quotientBoxes = steps.map(step => ({
+        col: step.column,
+        x: colLeft(step.column),
+        y: quotientRowYTop,
+        size: square,
+        digit: String(step.q)
+      }));
+
+      const dividendDigits = [...dividend].map((char, col) => ({
+        col,
+        char,
+        x: colCenter(col),
+        y: dividendYCenter
+      }));
+
+      const bracket = {
+        top:  { x1: bracketX, y1: bracketTopY, x2: colRight(N - 1) + bracketGap, y2: bracketTopY },
+        left: { x1: bracketX, y1: bracketTopY, x2: bracketX, y2: bracketBottomY }
+      };
+
+      const divisorEl = {
+        text: divisor,
+        x: bracketX - divisorPad,
+        y: dividendYCenter,
+        anchor: "end"
+      };
+
+      return {
+        width,
+        height,
+        geometry: { square, colStep, rowStep, bracketStroke, digitFontSize },
+        bracket,
+        divisor: divisorEl,
+        dividendDigits,
+        quotientRowYCenter,
+        quotientBoxes,
+        stepRows
+      };
+    }
 
     function mulberry32(seed) {
       let t = seed >>> 0;

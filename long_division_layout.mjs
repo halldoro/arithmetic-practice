@@ -1,10 +1,10 @@
-// SVG layout calculator for the long-division "house" diagram.
+// Test sidecar — Node-importable copy of the longDivisionLayout function
+// from practice.html. Mirror any change to the function body verbatim
+// in both places. Same convention as tools/gen_brick_pattern.mjs.
+// practice.html is the source of truth; this file exists so
+// `make test` can exercise the layout math from Node.
 //
-// Pure function: takes the result of divideSteps(dividend, divisor) plus
-// optional geometry overrides and returns positioned drawing primitives
-// (bracket lines, dividend digits, quotient boxes, per-step sub/divider/
-// post-row boxes). The renderer walks this object and emits SVG; no math
-// happens in the renderer. See doc/001 - Division Tab.md.
+// See doc/001 - Division Tab.md.
 //
 // Vertical sequence of rows in the returned layout:
 //
