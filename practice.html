@@ -1379,7 +1379,10 @@
         });
       }
 
-      const bracketBottomY = y;
+      // Left side of the "house" only extends down past the dividend row,
+      // not the full work area — keeps the bracket a tidy frame around the
+      // divisor/dividend rather than a long fence next to every step.
+      const bracketBottomY = dividendYTop + square;
       const height = y + margin;
       const width = colRight(N - 1) + margin;
 
