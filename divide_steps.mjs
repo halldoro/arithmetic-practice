@@ -1,5 +1,8 @@
-// Long-division calculator. Pure logic, no rendering. The renderer reads
-// the returned object so layout and answer-fill share one source of truth.
+// Test sidecar — Node-importable copy of the divideSteps function
+// from practice.html. Mirror any change to the function body verbatim
+// in both places. Same convention as tools/gen_brick_pattern.mjs.
+// practice.html is the source of truth; this file exists so
+// `make test` can exercise the math from Node.
 //
 // See doc/001 - Division Tab.md for the data-model contract.
 
