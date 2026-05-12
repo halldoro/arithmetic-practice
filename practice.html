@@ -1116,8 +1116,11 @@
     </div>
   </main>
 
-  <script>
+  <script type="module">
     "use strict";
+
+    import { divideSteps } from "./divide_steps.mjs";
+    import { longDivisionLayout } from "./long_division_layout.mjs";
 
     const SVG_NS = "http://www.w3.org/2000/svg";
 
@@ -1585,6 +1588,120 @@
       }
     }
 
+    // ------------------------------------------------------------
+    // Long-division renderer. Walks the layout produced by
+    // longDivisionLayout() and emits SVG. No layout math happens
+    // here — the layout module owns positions, this owns drawing.
+    // ------------------------------------------------------------
+
+    function drawBox(parent, box, ink) {
+      svgEl("rect", {
+        x: box.x,
+        y: box.y,
+        width: box.size,
+        height: box.size,
+        fill: "none",
+        stroke: ink,
+        "stroke-width": 2,
+        rx: 3,
+        ry: 3
+      }, parent);
+    }
+
+    function drawBoxDigit(parent, box, ink, fontSize) {
+      if (!box.digit) return;
+      addText(parent, box.digit, box.x + box.size / 2, box.y + box.size / 2, {
+        fill: ink,
+        "font-size": fontSize,
+        "text-anchor": "middle"
+      });
+    }
+
+    function renderLongDivision(stepsObj, options) {
+      const ink = options.inkColor;
+      const fillAnswer = !!options.includeAnswer;
+      const layout = longDivisionLayout(stepsObj);
+      const fontSize = layout.geometry.digitFontSize;
+
+      const svg = svgEl("svg", {
+        class: "problem-svg",
+        viewBox: `0 0 ${layout.width} ${layout.height}`,
+        preserveAspectRatio: "xMidYMid meet",
+        role: "img",
+        "aria-label": `${stepsObj.dividend} divided by ${stepsObj.divisor}`
+      });
+
+      addText(svg, layout.divisor.text, layout.divisor.x, layout.divisor.y, {
+        fill: ink,
+        "font-size": fontSize,
+        "text-anchor": layout.divisor.anchor
+      });
+
+      for (const line of [layout.bracket.top, layout.bracket.left]) {
+        svgEl("line", {
+          x1: line.x1, y1: line.y1, x2: line.x2, y2: line.y2,
+          stroke: ink,
+          "stroke-width": layout.geometry.bracketStroke,
+          "stroke-linecap": "round"
+        }, svg);
+      }
+
+      for (const d of layout.dividendDigits) {
+        addText(svg, d.char, d.x, d.y, {
+          fill: ink,
+          "font-size": fontSize,
+          "text-anchor": "middle"
+        });
+      }
+
+      for (const box of layout.quotientBoxes) {
+        drawBox(svg, box, ink);
+        if (fillAnswer) drawBoxDigit(svg, box, ink, fontSize);
+      }
+
+      for (const stepRow of layout.stepRows) {
+        addText(svg, stepRow.subRow.sign.text, stepRow.subRow.sign.x, stepRow.subRow.sign.y, {
+          fill: ink,
+          "font-size": fontSize,
+          "text-anchor": "middle"
+        });
+        for (const box of stepRow.subRow.boxes) {
+          drawBox(svg, box, ink);
+          if (fillAnswer) drawBoxDigit(svg, box, ink, fontSize);
+        }
+        svgEl("line", {
+          x1: stepRow.divider.x1, y1: stepRow.divider.y,
+          x2: stepRow.divider.x2, y2: stepRow.divider.y,
+          stroke: ink,
+          "stroke-width": 3,
+          "stroke-linecap": "round"
+        }, svg);
+        for (const box of stepRow.postRow.boxes) {
+          drawBox(svg, box, ink);
+          if (fillAnswer) drawBoxDigit(svg, box, ink, fontSize);
+        }
+      }
+
+      return svg;
+    }
+
+    // Phase 2 placeholder: render one hard-coded problem into the
+    // Division view. Phase 3 wires this into the exerciseTypes
+    // pipeline with sidebar controls.
+    function renderHardCodedDivisionExample() {
+      const page = document.getElementById("divisionPage");
+      if (!page) return;
+      page.innerHTML = "";
+      page.style.gridTemplateColumns = "1fr";
+      page.style.gridTemplateRows = "1fr";
+      const cell = document.createElement("div");
+      cell.className = "problem-cell";
+      const stepsObj = divideSteps("5040", "12");
+      const ink = document.getElementById("inkColor").value;
+      cell.appendChild(renderLongDivision(stepsObj, { inkColor: ink, includeAnswer: false }));
+      page.appendChild(cell);
+    }
+
     const exerciseTypes = {
       lineMultiplication: {
         label: "Line multiplication",
@@ -1928,6 +2045,7 @@
     buildProblemCountGrid();
     initializeProblemTypePicker();
     createProblemSet();
+    renderHardCodedDivisionExample();
   </script>
 </body>
 </html>
