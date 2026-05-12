@@ -1098,17 +1098,92 @@
 
     <div class="line-mult-layout" data-view="longDivision" hidden>
       <aside class="line-sidebar" aria-label="Worksheet controls">
-        <div class="control-card">
-          <h2>Long division</h2>
+        <div class="control-card problems-card">
+          <h2>Number of problems</h2>
+          <input id="divisionProblemCount" type="hidden" value="3">
+          <div id="divisionProblemCountGrid" class="count-grid" aria-label="Number of problems"></div>
+        </div>
+
+        <div class="control-card size-card">
+          <div class="size-card-header">
+            <div>
+              <h2>Number of digits</h2>
+              <p id="divisionProblemTypeSummary">Range: up to 4-digit ÷ 2-digit</p>
+            </div>
+
+            <div class="mode-toggle" role="group" aria-label="Number of digits mode">
+              <button id="divisionRangeModeBtn" type="button" class="mode-button active">Range</button>
+              <button id="divisionFixedModeBtn" type="button" class="mode-button">Fixed</button>
+            </div>
+          </div>
+
+          <input id="divisionProblemType" type="hidden" value="4x2">
+          <input id="divisionProblemMode" type="hidden" value="range">
+
+          <div class="digit-grid-panel">
+            <div class="axis-label"><span class="axis-arrow" aria-hidden="true">↕</span>digits in dividend</div>
+            <div class="axis-label"><span class="axis-arrow" aria-hidden="true">↔</span>digits in divisor</div>
+            <div id="divisionDigitGrid" class="digit-grid" aria-label="Digit-count grid"></div>
+          </div>
+
           <p class="picker-help">
-            Sidebar controls (number of problems, digit counts, seed, ink color,
-            <strong>Allow remainder</strong>, <strong>Include answer</strong>,
-            <strong>Print</strong>) arrive in Phase 3. See
-            <code>doc/001 - Division Tab.md</code>.
+            <strong>Range</strong> chooses all valid sizes up to the selected square.
+            <strong>Fixed</strong> chooses only one exact size. Cells where the divisor has as many or more digits than the dividend are disabled.
           </p>
+
+          <div class="switch-row">
+            <label for="allowRemainder">Allow remainder</label>
+            <label class="switch">
+              <input id="allowRemainder" type="checkbox">
+              <span class="switch-slider" aria-hidden="true"></span>
+            </label>
+          </div>
         </div>
       </aside>
+
       <div class="line-right-col">
+        <div class="top-right-row">
+          <div class="control-card compact-card card-random">
+            <h2>Randomness</h2>
+            <div class="seed-row-header">
+              <label for="divisionSeed">Seed <span class="muted">(optional)</span></label>
+              <div class="seed-display">
+                <span>Current:</span>
+                <button id="divisionCurrentSeed" type="button" class="seed-current" title="Click to copy seed"></button>
+              </div>
+            </div>
+            <div class="paired-row">
+              <input id="divisionSeed" inputmode="numeric" placeholder="blank = random">
+              <button id="divisionNewSetBtn" type="button" class="secondary">New set</button>
+            </div>
+          </div>
+
+          <div class="control-card compact-card card-answers">
+            <h2>Answers</h2>
+            <div class="switch-row">
+              <label for="divisionIncludeAnswer">Include answer</label>
+              <label class="switch">
+                <input id="divisionIncludeAnswer" type="checkbox">
+                <span class="switch-slider" aria-hidden="true"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="control-card compact-card card-print">
+            <h2>Print style</h2>
+            <label for="divisionInkColor">Ink color</label>
+            <div class="paired-row">
+              <select id="divisionInkColor">
+                <option value="#0000b8" selected>Blue</option>
+                <option value="#000000">Black</option>
+                <option value="#1c5d2f">Green</option>
+                <option value="#7b1f1f">Red-brown</option>
+              </select>
+              <button id="divisionPrintBtn" type="button">Print</button>
+            </div>
+          </div>
+        </div>
+
         <section class="worksheet-wrap">
           <div id="divisionPage" class="page portrait" aria-label="Printable worksheet"></div>
         </section>
