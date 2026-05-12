@@ -981,12 +981,12 @@
       <button class="exercise-tab active" type="button" role="tab" aria-selected="true" data-topic="multiplication">
         Multiplication
       </button>
-      <button class="exercise-tab disabled" type="button" role="tab" aria-selected="false" disabled>
+      <button class="exercise-tab" type="button" role="tab" aria-selected="false" data-topic="division" data-view="longDivision">
         Division
       </button>
     </div>
 
-    <div class="sub-tabs" role="tablist" aria-label="Multiplication type">
+    <div class="sub-tabs" data-topic="multiplication" role="tablist" aria-label="Multiplication type">
       <button class="sub-tab active" type="button" role="tab" aria-selected="true" data-exercise="multiplicationTables">
         Single digit
       </button>
@@ -1095,10 +1095,32 @@
         </section>
       </div>
     </div>
+
+    <div class="line-mult-layout" data-view="longDivision" hidden>
+      <aside class="line-sidebar" aria-label="Worksheet controls">
+        <div class="control-card">
+          <h2>Long division</h2>
+          <p class="picker-help">
+            Sidebar controls (number of problems, digit counts, seed, ink color,
+            <strong>Allow remainder</strong>, <strong>Include answer</strong>,
+            <strong>Print</strong>) arrive in Phase 3. See
+            <code>doc/001 - Division Tab.md</code>.
+          </p>
+        </div>
+      </aside>
+      <div class="line-right-col">
+        <section class="worksheet-wrap">
+          <div id="divisionPage" class="page portrait" aria-label="Printable worksheet"></div>
+        </section>
+      </div>
+    </div>
   </main>
 
-  <script>
+  <script type="module">
     "use strict";
+
+    import { divideSteps } from "./divide_steps.mjs";
+    import { longDivisionLayout } from "./long_division_layout.mjs";
 
     const SVG_NS = "http://www.w3.org/2000/svg";
 
@@ -1566,6 +1588,120 @@
       }
     }
 
+    // ------------------------------------------------------------
+    // Long-division renderer. Walks the layout produced by
+    // longDivisionLayout() and emits SVG. No layout math happens
+    // here — the layout module owns positions, this owns drawing.
+    // ------------------------------------------------------------
+
+    function drawBox(parent, box, ink) {
+      svgEl("rect", {
+        x: box.x,
+        y: box.y,
+        width: box.size,
+        height: box.size,
+        fill: "none",
+        stroke: ink,
+        "stroke-width": 2,
+        rx: 3,
+        ry: 3
+      }, parent);
+    }
+
+    function drawBoxDigit(parent, box, ink, fontSize) {
+      if (!box.digit) return;
+      addText(parent, box.digit, box.x + box.size / 2, box.y + box.size / 2, {
+        fill: ink,
+        "font-size": fontSize,
+        "text-anchor": "middle"
+      });
+    }
+
+    function renderLongDivision(stepsObj, options) {
+      const ink = options.inkColor;
+      const fillAnswer = !!options.includeAnswer;
+      const layout = longDivisionLayout(stepsObj);
+      const fontSize = layout.geometry.digitFontSize;
+
+      const svg = svgEl("svg", {
+        class: "problem-svg",
+        viewBox: `0 0 ${layout.width} ${layout.height}`,
+        preserveAspectRatio: "xMidYMid meet",
+        role: "img",
+        "aria-label": `${stepsObj.dividend} divided by ${stepsObj.divisor}`
+      });
+
+      addText(svg, layout.divisor.text, layout.divisor.x, layout.divisor.y, {
+        fill: ink,
+        "font-size": fontSize,
+        "text-anchor": layout.divisor.anchor
+      });
+
+      for (const line of [layout.bracket.top, layout.bracket.left]) {
+        svgEl("line", {
+          x1: line.x1, y1: line.y1, x2: line.x2, y2: line.y2,
+          stroke: ink,
+          "stroke-width": layout.geometry.bracketStroke,
+          "stroke-linecap": "round"
+        }, svg);
+      }
+
+      for (const d of layout.dividendDigits) {
+        addText(svg, d.char, d.x, d.y, {
+          fill: ink,
+          "font-size": fontSize,
+          "text-anchor": "middle"
+        });
+      }
+
+      for (const box of layout.quotientBoxes) {
+        drawBox(svg, box, ink);
+        if (fillAnswer) drawBoxDigit(svg, box, ink, fontSize);
+      }
+
+      for (const stepRow of layout.stepRows) {
+        addText(svg, stepRow.subRow.sign.text, stepRow.subRow.sign.x, stepRow.subRow.sign.y, {
+          fill: ink,
+          "font-size": fontSize,
+          "text-anchor": "middle"
+        });
+        for (const box of stepRow.subRow.boxes) {
+          drawBox(svg, box, ink);
+          if (fillAnswer) drawBoxDigit(svg, box, ink, fontSize);
+        }
+        svgEl("line", {
+          x1: stepRow.divider.x1, y1: stepRow.divider.y,
+          x2: stepRow.divider.x2, y2: stepRow.divider.y,
+          stroke: ink,
+          "stroke-width": 3,
+          "stroke-linecap": "round"
+        }, svg);
+        for (const box of stepRow.postRow.boxes) {
+          drawBox(svg, box, ink);
+          if (fillAnswer) drawBoxDigit(svg, box, ink, fontSize);
+        }
+      }
+
+      return svg;
+    }
+
+    // Phase 2 placeholder: render one hard-coded problem into the
+    // Division view. Phase 3 wires this into the exerciseTypes
+    // pipeline with sidebar controls.
+    function renderHardCodedDivisionExample() {
+      const page = document.getElementById("divisionPage");
+      if (!page) return;
+      page.innerHTML = "";
+      page.style.gridTemplateColumns = "1fr";
+      page.style.gridTemplateRows = "1fr";
+      const cell = document.createElement("div");
+      cell.className = "problem-cell";
+      const stepsObj = divideSteps("5040", "12");
+      const ink = document.getElementById("inkColor").value;
+      cell.appendChild(renderLongDivision(stepsObj, { inkColor: ink, includeAnswer: false }));
+      page.appendChild(cell);
+    }
+
     const exerciseTypes = {
       lineMultiplication: {
         label: "Line multiplication",
@@ -1867,13 +2003,49 @@
       });
     }
 
+    // Top-tab click routing. Multiplication owns a sub-tab strip and defers
+    // view selection to whichever sub-tab is active. Division has no sub-tabs,
+    // so its top tab carries data-view and switches the view directly.
+    function setActiveTopicTab(topTab) {
+      if (!topTab || topTab.classList.contains("disabled") || topTab.disabled) return;
+      const topic = topTab.dataset.topic;
+
+      document.querySelectorAll(".exercise-tab[data-topic]").forEach(t => {
+        const isActive = t === topTab;
+        t.classList.toggle("active", isActive);
+        t.setAttribute("aria-selected", isActive ? "true" : "false");
+      });
+
+      let activeStrip = null;
+      document.querySelectorAll(".sub-tabs[data-topic]").forEach(strip => {
+        const ours = strip.dataset.topic === topic;
+        strip.hidden = !ours;
+        if (ours) activeStrip = strip;
+      });
+
+      if (activeStrip) {
+        const sub = activeStrip.querySelector(".sub-tab.active") || activeStrip.querySelector(".sub-tab");
+        setActiveExerciseTab(sub);
+      } else {
+        const targetView = topTab.dataset.view;
+        document.querySelectorAll("[data-view]").forEach(v => {
+          v.hidden = v.dataset.view !== targetView;
+        });
+      }
+    }
+
     document.querySelectorAll(".sub-tab[data-exercise]").forEach(tab => {
       tab.addEventListener("click", () => setActiveExerciseTab(tab));
+    });
+
+    document.querySelectorAll(".exercise-tab[data-topic]").forEach(tab => {
+      tab.addEventListener("click", () => setActiveTopicTab(tab));
     });
 
     buildProblemCountGrid();
     initializeProblemTypePicker();
     createProblemSet();
+    renderHardCodedDivisionExample();
   </script>
 </body>
 </html>
