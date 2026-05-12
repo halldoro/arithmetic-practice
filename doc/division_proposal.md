@@ -1,42 +1,18 @@
 # Division tab — implementation proposal
 
-This is a design sketch, not yet implemented. Goal: turn the disabled `Division` top-level tab into a real exercise area that parallels `Multiplication` and reuses as much of the existing infrastructure as possible (`sidebarLayout`, `problemCountGrid`, problem-size mode, seed, ink colour, `includeAnswer`, print).
+This is a design sketch, not yet implemented. Goal: turn the disabled `Division` top-level tab into a real exercise area that reuses as much of the existing infrastructure as possible (`sidebarLayout`, `problemCountGrid`, problem-size mode, seed, ink colour, `includeAnswer`, print).
+
+The Division tab is a single exercise generator: long-division problems drawn in the standard "house" layout, with empty square boxes everywhere the child writes a digit — quotient, subtractions, bring-downs, and final remainder.
 
 ## UI structure
 
-Mirror Multiplication:
+Unlike Multiplication, Division has a single variant, so the top-level **Division** tab acts directly as the view — no sub-tab strip. The right pane shows the live worksheet preview; the left pane reuses the multi-digit sidebar layout.
 
-- Top tab: **Division** (enable).
-- Sub-tabs:
-  - **Single digit** — generator for direct division facts (`48 ÷ 6 = ?`).
-  - **Multi digit** — generator for the standard long-division algorithm (`7836 ÷ 23` rendered in the "house" layout, with empty work boxes).
+If a second variant is ever added later, reintroduce a sub-tab strip in the same shape as Multiplication's.
 
-One intentional asymmetry vs. Multiplication: the Multiplication > Single digit tab is a static reference PDF (the times table). The corresponding reference for division is *the same multiplication table*, read in reverse — so a separate division reference PDF would just duplicate what's already on the Multiplication tab. Use the slot for a practice generator instead.
+## Long-division generator
 
-## Single digit Division — practice generator
-
-Generate problems of the form `dividend ÷ divisor = ?` where:
-
-- `divisor` ∈ 2–9 (skip 1, since it's trivial).
-- `dividend = divisor × k` for `k` ∈ 1–12 — always exact, no remainders at this level.
-
-Layout is the simplest possible — one expression per cell with a writing box for the answer:
-
-```
-  48 ÷ 6 = [   ]
-```
-
-Sidebar controls (all reuse existing components):
-
-- **Number of problems** — 4×3 grid (1–12).
-- **Divisor range** — multi-select chips for divisors 2–9.
-- **Seed**, **New set**, **Ink color**, **Include answer**, **Print**.
-
-`includeAnswer` simply prints the result inside the box. Cheap to implement and a good first wiring exercise to confirm Division-tab routing works end-to-end.
-
-## Multi digit Division — long-division generator
-
-The interesting one. Generate problems where the dividend has 3–5 digits and the divisor 1–3 digits, drawn in standard long-division layout with empty work boxes.
+Generate problems where the dividend has 3–5 digits and the divisor 1–3 digits, drawn in standard long-division layout with empty work boxes.
 
 ### Algorithm recap
 
@@ -100,16 +76,11 @@ This is more arithmetic than the multiplication answer-fill ever did (which curr
 
 ## Data model
 
-Add a third entry to `exerciseTypes`:
+Add a second entry to `exerciseTypes`:
 
 ```js
 const exerciseTypes = {
   lineMultiplication: { ... },
-  singleDigitDivision: {
-    label: "Single digit division",
-    makeProblems: makeDivisionProblems,
-    renderProblem: renderSingleDigitDivision
-  },
   longDivision: {
     label: "Long division",
     makeProblems: makeDivisionProblems,
@@ -118,7 +89,7 @@ const exerciseTypes = {
 };
 ```
 
-Each long-division problem carries the precomputed steps, so layout and answer-fill share one source of truth:
+Each problem carries the precomputed steps, so layout and answer-fill share one source of truth:
 
 ```js
 {
@@ -154,13 +125,12 @@ Repurpose `digitCountGrid` for picking `dividend × divisor` digit counts (e.g. 
 
 ## Phased implementation
 
-1. **Phase 1** — Single digit Division (horizontal form, exact only, includeAnswer fills the answer box). Cheapest; proves the Division-tab routing.
-2. **Phase 2** — `divideSteps` data model + long-division layout. No remainder support yet, fixed `4×2` size. One commit per concern: data model, layout calculator, SVG renderer, sidebar wiring.
-3. **Phase 3** — Range/Fixed digit grid, `Allow remainder` toggle, `includeAnswer` fill for long division.
+1. **Phase 1** — `divideSteps` data model with unit tests. Pure logic, no rendering — proves the math is right and gives the renderer a stable contract.
+2. **Phase 2** — Enable the Division top tab and render a single hard-coded problem in the house layout. No remainder support yet, fixed `4×2` size. One commit per concern: tab routing, layout calculator, SVG renderer.
+3. **Phase 3** — Sidebar wiring: `digitCountGrid` (with Range/Fixed), `problemCountGrid`, seed, ink color, `New set`, `Allow remainder` toggle, `includeAnswer` fill.
 4. **Phase 4** — Polish: per-problem auto-shrink based on step count, mobile-aware sizing, print verification.
 
 ## Open questions
 
-- Should Single digit Division also have a static reference PDF (a "division facts" sheet)? Probably not — the multiplication table covers the same facts. Defer until a user asks.
 - Do we want decimal-extension long division (`13 ÷ 4 = 3.25`)? Out of scope for the first cut; would change the layout (bring-down zeros after a decimal point) and the algorithm termination condition.
 - Bracket style: the modern "long division house" with explicit angle reads better than the typewriter `divisor)dividend` form, but the rendering is fiddlier. Recommend the modern bracket.
