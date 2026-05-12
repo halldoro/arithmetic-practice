@@ -2540,17 +2540,15 @@
       setTimeout(() => btn.classList.remove("copied"), 1100);
     });
 
-    // Print the embedded multiplication-table PDF. Try the iframe's own
-    // print() first; fall back to opening the PDF in a new tab if the
-    // browser's PDF viewer doesn't expose print().
+    // Print the multiplication-table PDF. The source was authored at
+    // 641×862pt (≈8.9×12 in) — slightly larger than A4 (595×842pt) —
+    // and printing it directly via iframe.contentWindow.print() opens a
+    // print dialog whose default scale leaves the page clipped at the
+    // right/bottom edges. Opening the PDF in a new tab routes it through
+    // the browser's built-in PDF viewer, whose print dialog defaults to
+    // "Fit to printable area" so the table scales onto A4 cleanly.
     document.getElementById("printPdfBtn").addEventListener("click", () => {
-      const iframe = document.querySelector(".tables-pdf");
-      try {
-        iframe.contentWindow.focus();
-        iframe.contentWindow.print();
-      } catch (_) {
-        window.open("MultiplicationTable.pdf", "_blank");
-      }
+      window.open("MultiplicationTable.pdf", "_blank");
     });
 
     function setActiveExerciseTab(tab) {
