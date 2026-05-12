@@ -981,7 +981,7 @@
       <button class="exercise-tab active" type="button" role="tab" aria-selected="true" data-topic="multiplication">
         Multiplication
       </button>
-      <button class="exercise-tab" type="button" role="tab" aria-selected="false" data-topic="division" data-view="longDivision">
+      <button class="exercise-tab" type="button" role="tab" aria-selected="false" data-topic="division" data-default-view="longDivision">
         Division
       </button>
     </div>
@@ -2571,7 +2571,11 @@
         const sub = activeStrip.querySelector(".sub-tab.active") || activeStrip.querySelector(".sub-tab");
         setActiveExerciseTab(sub);
       } else {
-        const targetView = topTab.dataset.view;
+        // Top tab with no sub-tab strip carries data-default-view (not
+        // data-view — that's reserved for the view panels themselves, so
+        // setActiveExerciseTab's [data-view] sweep doesn't accidentally
+        // hide the top tab when a sibling sub-tab is clicked).
+        const targetView = topTab.dataset.defaultView;
         document.querySelectorAll("[data-view]").forEach(v => {
           v.hidden = v.dataset.view !== targetView;
         });
