@@ -1407,6 +1407,28 @@
         anchor: "end"
       };
 
+      // Small \frac{dividend}{divisor} marker in the SVG's top-left
+      // corner so each problem advertises what it is at a glance,
+      // independent of how the house layout renders it.
+      const fracFontSize = digitFontSize * 0.5;
+      const fracDigitWidth = fracFontSize * 0.6;
+      const fracTextGap = 4;
+      const fracPadX = 6;
+      const fracPadY = 6;
+      const fracLineWidth =
+        Math.max(dividend.length, divisor.length) * fracDigitWidth + 6;
+      const fracCenterX = fracPadX + fracLineWidth / 2;
+      const fracNumY = fracPadY + fracFontSize / 2;
+      const fracLineY = fracNumY + fracFontSize / 2 + fracTextGap;
+      const fracDenY = fracLineY + fracTextGap + fracFontSize / 2;
+      const fraction = {
+        numerator:   { text: dividend, x: fracCenterX, y: fracNumY },
+        line:        { x1: fracPadX, y1: fracLineY,
+                       x2: fracPadX + fracLineWidth, y2: fracLineY },
+        denominator: { text: divisor,  x: fracCenterX, y: fracDenY },
+        fontSize: fracFontSize
+      };
+
       return {
         width,
         height,
@@ -1416,7 +1438,8 @@
         dividendDigits,
         quotientRowYCenter,
         quotientBoxes,
-        stepRows
+        stepRows,
+        fraction
       };
     }
 
@@ -1925,6 +1948,25 @@
         preserveAspectRatio: "xMidYMid meet",
         role: "img",
         "aria-label": `${stepsObj.dividend} divided by ${stepsObj.divisor}`
+      });
+
+      // Top-left \frac{dividend}{divisor} marker.
+      const frac = layout.fraction;
+      addText(svg, frac.numerator.text, frac.numerator.x, frac.numerator.y, {
+        fill: ink,
+        "font-size": frac.fontSize,
+        "text-anchor": "middle"
+      });
+      svgEl("line", {
+        x1: frac.line.x1, y1: frac.line.y1, x2: frac.line.x2, y2: frac.line.y2,
+        stroke: ink,
+        "stroke-width": 2,
+        "stroke-linecap": "round"
+      }, svg);
+      addText(svg, frac.denominator.text, frac.denominator.x, frac.denominator.y, {
+        fill: ink,
+        "font-size": frac.fontSize,
+        "text-anchor": "middle"
       });
 
       addText(svg, layout.divisor.text, layout.divisor.x, layout.divisor.y, {
