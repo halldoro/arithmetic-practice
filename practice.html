@@ -796,6 +796,30 @@
       display: block;
     }
 
+    /* \frac{dividend}{divisor} marker overlaid on each division cell.
+       Lives outside the SVG so its font size doesn't shrink with the
+       SVG when many problems share a page. */
+    .problem-fraction {
+      position: absolute;
+      top: 4px;
+      left: 6px;
+      font-family: serif;
+      font-size: 14px;
+      line-height: 1;
+      text-align: center;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .problem-fraction .frac-num {
+      padding: 0 4px 2px;
+      min-width: 1.6em;
+    }
+
+    .problem-fraction .frac-den {
+      padding: 2px 4px 0;
+    }
+
     .hidden,
     [hidden] {
       display: none !important;
@@ -1407,28 +1431,6 @@
         anchor: "end"
       };
 
-      // Small \frac{dividend}{divisor} marker in the SVG's top-left
-      // corner so each problem advertises what it is at a glance,
-      // independent of how the house layout renders it.
-      const fracFontSize = digitFontSize * 0.5;
-      const fracDigitWidth = fracFontSize * 0.6;
-      const fracTextGap = 4;
-      const fracPadX = 6;
-      const fracPadY = 6;
-      const fracLineWidth =
-        Math.max(dividend.length, divisor.length) * fracDigitWidth + 6;
-      const fracCenterX = fracPadX + fracLineWidth / 2;
-      const fracNumY = fracPadY + fracFontSize / 2;
-      const fracLineY = fracNumY + fracFontSize / 2 + fracTextGap;
-      const fracDenY = fracLineY + fracTextGap + fracFontSize / 2;
-      const fraction = {
-        numerator:   { text: dividend, x: fracCenterX, y: fracNumY },
-        line:        { x1: fracPadX, y1: fracLineY,
-                       x2: fracPadX + fracLineWidth, y2: fracLineY },
-        denominator: { text: divisor,  x: fracCenterX, y: fracDenY },
-        fontSize: fracFontSize
-      };
-
       return {
         width,
         height,
@@ -1438,8 +1440,7 @@
         dividendDigits,
         quotientRowYCenter,
         quotientBoxes,
-        stepRows,
-        fraction
+        stepRows
       };
     }
 
@@ -1950,25 +1951,6 @@
         "aria-label": `${stepsObj.dividend} divided by ${stepsObj.divisor}`
       });
 
-      // Top-left \frac{dividend}{divisor} marker.
-      const frac = layout.fraction;
-      addText(svg, frac.numerator.text, frac.numerator.x, frac.numerator.y, {
-        fill: ink,
-        "font-size": frac.fontSize,
-        "text-anchor": "middle"
-      });
-      svgEl("line", {
-        x1: frac.line.x1, y1: frac.line.y1, x2: frac.line.x2, y2: frac.line.y2,
-        stroke: ink,
-        "stroke-width": 2,
-        "stroke-linecap": "round"
-      }, svg);
-      addText(svg, frac.denominator.text, frac.denominator.x, frac.denominator.y, {
-        fill: ink,
-        "font-size": frac.fontSize,
-        "text-anchor": "middle"
-      });
-
       addText(svg, layout.divisor.text, layout.divisor.x, layout.divisor.y, {
         fill: ink,
         "font-size": fontSize,
@@ -2121,6 +2103,25 @@
       return problems;
     }
 
+    // HTML overlay so the marker has a fixed font size regardless of
+    // how the SVG scales to fit its cell. Lives outside the SVG, on the
+    // .problem-cell directly.
+    function buildFractionMarker(stepsObj, inkColor) {
+      const wrap = document.createElement("div");
+      wrap.className = "problem-fraction";
+      wrap.style.color = inkColor;
+      const num = document.createElement("div");
+      num.className = "frac-num";
+      num.style.borderBottom = `1.2px solid ${inkColor}`;
+      num.textContent = stepsObj.dividend;
+      const den = document.createElement("div");
+      den.className = "frac-den";
+      den.textContent = stepsObj.divisor;
+      wrap.appendChild(num);
+      wrap.appendChild(den);
+      return wrap;
+    }
+
     function createDivisionProblemSet() {
       const options = readDivisionOptions();
       updateDivisionNewSetButton();
@@ -2146,6 +2147,7 @@
         page.appendChild(cell);
         if (i < problems.length) {
           cell.appendChild(renderLongDivision(problems[i], options));
+          cell.appendChild(buildFractionMarker(problems[i], options.inkColor));
           lastVisibleCell = cell;
         } else {
           cell.classList.add("hidden");
