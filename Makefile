@@ -2,13 +2,12 @@
 #   make py          → python3 practice.py
 #   make py 3        → python3 practice.py 3
 #   make doc         → regenerate doc/ artifacts (currently the brick-layer SVG)
-#   make test        → run JS unit tests (node --test)
 #   make clean       → remove generated PDFs and scratch dir
 
 # Forward any extra goals on the command line as args to the script.
 PY_ARGS := $(filter-out py,$(MAKECMDGOALS))
 
-.PHONY: py doc test clean
+.PHONY: py doc clean
 
 py:
 	python3 practice.py $(PY_ARGS)
@@ -20,9 +19,6 @@ doc: doc/brick_layer_pattern.svg
 # from practice.html in Node. Rebuild whenever either source changes.
 doc/brick_layer_pattern.svg: tools/gen_brick_pattern.mjs practice.html
 	node tools/gen_brick_pattern.mjs
-
-test:
-	node --test *.test.mjs
 
 clean:
 	rm -f M*.pdf
