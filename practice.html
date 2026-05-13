@@ -1199,11 +1199,6 @@
     // ------------------------------------------------------------
     // Long-division calculator. Pure logic, no rendering.
     // See doc/001 - Division Tab.md for the data-model contract.
-    //
-    // Kept in sync with the sidecar test copy at divide_steps.mjs
-    // (which is loaded by `make test`). Edit here first; mirror
-    // verbatim to the .mjs file when changing the function body —
-    // same convention as tools/gen_brick_pattern.mjs.
     // ------------------------------------------------------------
     function divideSteps(dividend, divisor) {
       const dividendStr = String(dividend);
@@ -1273,8 +1268,7 @@
     // ------------------------------------------------------------
     // Long-division SVG layout calculator. Pure function from a
     // divideSteps result + optional geometry to positioned drawing
-    // primitives. Kept in sync with long_division_layout.mjs (test
-    // sidecar). Edit here first; mirror verbatim to the .mjs.
+    // primitives.
     // ------------------------------------------------------------
     function longDivisionLayout(stepsObj, opts = {}) {
       const square        = opts.square        ?? 60;
