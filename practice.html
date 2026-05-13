@@ -2388,7 +2388,7 @@
       const value = document.getElementById("problemType").value;
       const mode = document.getElementById("problemMode").value;
       const active = activeProblemTypeValues(previewValue || value, mode);
-      const cells = [...document.querySelectorAll(".digit-cell")];
+      const cells = [...document.querySelectorAll("#digitGrid .digit-cell")];
 
       for (const cell of cells) {
         cell.classList.remove("selected", "preview");
@@ -2431,7 +2431,7 @@
     function setProblemCount(count, { regenerate = true } = {}) {
       document.getElementById("problemCount").value = String(count);
 
-      for (const btn of document.querySelectorAll(".count-button")) {
+      for (const btn of document.querySelectorAll("#problemCountGrid .count-button")) {
         btn.classList.toggle("active", Number(btn.dataset.count) === count);
       }
 
