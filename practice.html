@@ -796,9 +796,11 @@
       display: block;
     }
 
-    /* \frac{dividend}{divisor} marker overlaid on each division cell.
+    /* \frac{dividend}{divisor} = marker overlaid on each division cell.
        Lives outside the SVG so its font size doesn't shrink with the
-       SVG when many problems share a page. */
+       SVG when many problems share a page. Flex row vertically centers
+       the "=" with the midpoint of the fraction stack — which, with
+       symmetric num/den padding, lands exactly on the dividing line. */
     .problem-fraction {
       position: absolute;
       top: 4px;
@@ -809,6 +811,14 @@
       text-align: center;
       pointer-events: none;
       user-select: none;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .problem-fraction .frac-stack {
+      display: flex;
+      flex-direction: column;
     }
 
     .problem-fraction .frac-num {
@@ -818,6 +828,10 @@
 
     .problem-fraction .frac-den {
       padding: 2px 4px 0;
+    }
+
+    .problem-fraction .frac-eq {
+      display: inline-block;
     }
 
     .hidden,
@@ -2110,6 +2124,9 @@
       const wrap = document.createElement("div");
       wrap.className = "problem-fraction";
       wrap.style.color = inkColor;
+
+      const stack = document.createElement("div");
+      stack.className = "frac-stack";
       const num = document.createElement("div");
       num.className = "frac-num";
       num.style.borderBottom = `1.2px solid ${inkColor}`;
@@ -2117,8 +2134,15 @@
       const den = document.createElement("div");
       den.className = "frac-den";
       den.textContent = stepsObj.divisor;
-      wrap.appendChild(num);
-      wrap.appendChild(den);
+      stack.appendChild(num);
+      stack.appendChild(den);
+
+      const eq = document.createElement("span");
+      eq.className = "frac-eq";
+      eq.textContent = "=";
+
+      wrap.appendChild(stack);
+      wrap.appendChild(eq);
       return wrap;
     }
 
